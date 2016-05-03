@@ -4,7 +4,7 @@ header-img: img/home-bg.png
 email: jasonkwong11@gmail.com
 copyright_name: jasonkwong11
 description: > # this means to ignore newlines until "baseurl:"
-  Welcome to Jason's Dev Blog!
+  Jason's thoughts on Ruby on Rails ... on caffeine.
 baseurl: "" # the subpath of your site, e.g. /blog
 twitter_username: jason_is_real
 github_username:  jasonkwong11
