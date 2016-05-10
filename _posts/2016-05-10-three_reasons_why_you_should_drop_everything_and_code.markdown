@@ -1,10 +1,9 @@
 ---
 layout: post
-title:  "# Three Reasons Why You Should Drop Everything and Code"
-date:   2016-05-10 15:45:17 +0000
+title:  Three Reasons Why You Should Drop Everything and Code
+date:   2016-05-10 11:45:17 -0400
 ---
 
-# 
 
 Experts predict that by the year 2020, the number of active users on the internet will grow from 3.14 billion to 5 billion. Amazon's Alexa signals a voice recognized platform that promises to be the next iPhone in terms of changing the way we live our lives. Want to learn Irish? Try Duolingo. Not sure which TV show to watch? Don't worry, Netflix's algorithm has that covered. Today, it's clear that more and more, that software is an increasingly big part of our lives. Here are my top three reasons why I think everyone should learn software development:
 
