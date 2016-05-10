@@ -13,7 +13,7 @@ Experts predict that by the year 2020, the number of active users on the interne
 
 2. It's Empowering
 
-	As I learn web development, the idea that I'll have a chance to literally write the future of the world through code is an extremely exciting idea. Everyone has those "Wouldn't the world be better if..." ideas and as a software developer you can make those ideas a reality. In recent years, the internet has proven to be the world's greatest vehicle of social justice through providing education and awareness in areas of health, environment, and gender equality all over the world. It's empowering to know that you'll have the tools to create a new application that can empower others on the other side of the planet. You're skills and understanding of our modern technological world are in demand as other people seek your help to make their vision come to life.
+	As I learn web development, the idea that I'll have a chance to literally write the future of the world through code is an extremely exciting idea. Everyone has those "Wouldn't the world be better if..." ideas and as a software developer you can make those ideas a reality. In recent years, the internet has proven to be the world's greatest vehicle of social justice through providing education and awareness in areas of health, environment, and gender equality all over the world. It's empowering to know that you'll have the tools to create a new application that can empower others on the other side of the planet. Your skills and understanding of our modern technological world are in demand as other people seek your help to make their vision come to life.
 
 3. Work with smart, friendly and talented people
 
