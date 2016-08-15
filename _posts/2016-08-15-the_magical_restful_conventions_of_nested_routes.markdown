@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "The Magical RESTful Conventions of Nested Routes"
-date:   2016-08-15 00:11:09 +0000
+date:   2016-08-14 20:11:09 -0400
 ---
 
 
@@ -11,18 +11,14 @@ Take this path for example:
 
 `/houses/3/rooms/2`  
 
-RESTful convention allows us to understand that the path above will take us a a page related to room 2 of house 3.
+RESTful convention allows us to understand that the path above will take us a page related to room 2 of house 3.
 
 In our routes.rb file, we can represent it like below:
 
-`	resources: houses do
-resources :rooms
-end`
-
 ```
 resources: houses do
-resources :rooms
-end
+     resources :rooms
+   end
 ```
 
 
