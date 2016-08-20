@@ -5,7 +5,7 @@ date:   2016-08-19 21:19:54 -0400
 ---
 
 
-Greetings! This post describes the joys of creating my first Rails application, real.est.investor, a real estate investing education platform.This site is meant for real estate investors to meet and share tips and best practices in their experiences with real estate investment. Real estate investment is a hobby of mine and I enjoy learning about it. There's so much to learn and investment strategies often vary depending on the region due to differences in local laws, procedures, etc. I thought a platform to create a common knowledge base on the subject would be a great way to educate newbies and pro's alike.
+Greetings! This post describes the joys of creating my first Rails application, real.est.investor, a real estate investing education platform. This site is meant for real estate investors to meet and share tips and best practices in their experiences with real estate investment. Real estate investment is a hobby of mine and I enjoy learning about it. There's so much to learn and investment strategies often vary depending on the region due to differences in local laws, procedures, etc. I thought a platform to create a common knowledge base on the subject would be a great way to educate newbies and pro's alike.
 
 How it works: 
 
@@ -16,7 +16,7 @@ Nested forms for each post allow the user to associate relevant details about th
 
 The process:
 
-This CRUD app was a great learning experience for creating my first rails app. The biggest lesson I learned is that Devise and OmniAuth can be incredibly frustrating. Because Devise's views and sessions controller are hidden until you generate them (but they're hooked up in the routes.rb by default), routing can easily send you in a spiral of self-doubt, questioning whether you know how to route at all. Luckily, you're not crazy, Devise is! OmniAuth? The cure is usually running rake routes often to make sure views are wired to the correct controller actions. The cure for OmniAuth? There is no cure.
+This CRUD app was a great learning experience for creating my first rails app. The biggest lesson I learned is that Devise and OmniAuth can be incredibly frustrating. Because Devise's views and sessions controller are hidden until you generate them (but they're hooked up in the routes.rb by default), routing can easily send you in a spiral of self-doubt, questioning whether you know how to route at all. Luckily, you're not crazy, Devise is! The cure is usually running rake routes often to make sure views are wired to the correct controller actions. The cure for OmniAuth? There is no cure.
 
 Other than the above frustrations, everything else moved surprisingly smoothly! Heeding Avi's sage wisdom, I stubbed out the features for this website from the outside edges, inward:  starting by creating the database migrations and model associations then moving to the views and routes. This plan of lets you gain momentum in getting the low hanging fruit first. Then you have a very solid foundation when trying to implement nested routes, and subsequently Devise and Omniauth. This drastically sped up the entire development process.
 
