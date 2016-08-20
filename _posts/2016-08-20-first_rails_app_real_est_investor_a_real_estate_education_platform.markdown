@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "First Rails app: real.est.investor: a Real Estate Education Platform"
-date:   2016-08-20 01:19:53 +0000
+date:   2016-08-19 21:19:54 -0400
 ---
 
 
