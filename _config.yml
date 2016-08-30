@@ -1,12 +1,12 @@
 # Site settings
-title: Writing the Future of the World
+title: Jason's Dev Blog!
 header-img: img/home-bg.png
 email: jasonkwong11@gmail.com
 copyright_name: jasonkwong11
 description: > # this means to ignore newlines until "baseurl:"
   Jason's thoughts on Ruby on Rails ... on caffeine.
 baseurl: "" # the subpath of your site, e.g. /blog
-twitter_username: jason_is_real
+twitter_username: jasonkwongish
 github_username:  jasonkwong11
 learn_profile: jasonkwong11
 email_username: jasonkwong11@gmail.com
