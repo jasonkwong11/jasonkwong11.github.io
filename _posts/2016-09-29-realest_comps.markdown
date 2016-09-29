@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Rails Angular App, Realest Comps: Quick and Clear Real Estate Investor-Relevant Data for Property Comps"
+title:  "Rails Angular App - Realest Comps: Real Estate Investor-Relevant Data for Property Comps Without the Clutter"
 date:   2016-09-29 15:00:07 -0400
 ---
 
