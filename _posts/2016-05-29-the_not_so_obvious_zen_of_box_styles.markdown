@@ -4,6 +4,8 @@ title:  "The Not So Obvious Zen of Box Styles"
 date:   2016-05-29 20:07:04 +0000
 ---
 
+
+
 	Most developers understand box styles as tools to transform a barebones HTML page into a slick looking modern web application. But did you know that mastering box styles is a means to master one's life? No, really! Below are four of the many life lessons box styles can teach us. 
 
 1. Begin with the end. Be specific in what you want. 
