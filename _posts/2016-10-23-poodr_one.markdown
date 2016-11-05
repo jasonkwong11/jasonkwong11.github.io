@@ -1,0 +1,30 @@
+---
+layout: post
+title:  "I Have Notes from POODR: Well Designed Code"
+date:   2016-10-23 15:00:08-0400
+---
+
+I Have Notes from POODR: Well Designed Code
+
+Sandi Metz's Practical Object-Oriented Design in Ruby (POODR) should really be required reading for anyone learning object-oriented programming, especially Ruby. The book takes you from the step of "knowing how to code" to "knowing how to code WELL". So for the benefit of myself and anyone learning to code, I thought it would be a good idea to write a series of blog posts that highlight the big ideas from the book. This first post summarizes POODR's idea of what makes well designed code.
+
+What is good OO design? Good OO design allows us to change our application easily for unplanned/unexpected situations that are inevitable in lean development. Examples of unplanned/unexpected situations include: the client didn't know what they wanted, changed their mind, didn't say what they meant. Or simply if the developer misunderstood the requirements. Because we cannot predict the future or our future needs in our codebase, the best codebase we can design in the present allows us to easily adapt later on at the lowest cost of change possible (prevent technical debt).  
+
+How is this achieved? Well designed code should be TRUE: Transparent, Reasonable, Usable, Exemplary.
+
+Transparent: the consequences of change should be obvious in the code that is changing and in distant code that relies upon it. 
+Reasonable: The cost of any change should be proportional to the benefits the change achieves
+Usable: Existing code should be usable in new and unexpected contexts
+Exemplary: The code itself should encourage those who change it to perpetuate these qualities
+
+To make TRUE code, the first step is to create classes that have a single responsibility. A class should do the smallest possible useful thing. Single Responsibility Principle doesn't require that a class do only one very narrow thing or that it change for a single nitpicky reason, instead SRP requires that a class be cohesive -- that everything the class does be highly related to its purpose.
+
+When the future cost of doing nothing is the same as the current cost, postpone the decision. Make the decision only when you must with the information you have at that time. The structure of every class is a message to future maintainers of that application. It reveals your design intentions. For better or worse, the patterns you establish today will be replicated forever. 
+
+To write code that embraces change, depend on behavior, not data. Behavior is captured in methods and invoked by sending messages. In addition to behavior, objects often contain data. Data is held in an instance variable and can be anything from a simple string or a complex hash. Data can be accessed in one of two ways: you can refer directly to the instance variable or you can wrap the instance variable in an accessor method. Using Struct protects you against changes in externally owned data structures and makes your code more readable and intention revealing. It only requires a small number of new lines of code to create and define, compared to the permanent cost of indexing a complex array. 
+
+Benefits of SRP:
+	-Exposes previously hidden qualities, avoid the need for comments, encourage reuse, are easy to move to another class
+	-Classes and methods that do one thing isolate that thing from the rest of your application. This isolation allows change without consequences and reuse without duplication
+
+This concludes the first installment of I Have Notes from POODR. The next post will describe "Managing Dependencies and Creating Flexible Interfaces". Until then, adios!
