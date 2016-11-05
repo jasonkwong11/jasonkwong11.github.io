@@ -4,7 +4,6 @@ title:  "I Have Notes from POODR: Well Designed Code"
 date:   2016-10-23 15:00:08-0400
 ---
 
-I Have Notes from POODR: Well Designed Code
 
 Sandi Metz's Practical Object-Oriented Design in Ruby (POODR) should really be required reading for anyone learning object-oriented programming, especially Ruby. The book takes you from the step of "knowing how to code" to "knowing how to code WELL". So for the benefit of myself and anyone learning to code, I thought it would be a good idea to write a series of blog posts that highlight the big ideas from the book. This first post summarizes POODR's idea of what makes well designed code.
 
