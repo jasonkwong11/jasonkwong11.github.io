@@ -11,8 +11,6 @@ So, what are duck types? Duck types are public interfaces that are not tied any 
 
 Within your app, an object's type is in the eye of the beholder. Users of an object need not and should not, be concerned about its class. Class is just one way for an object to acquire a public interface; the public interface an object obtains by way of its class may be one of several that it contains. Applications may define many public interfaces that are not related to one specific class; these interfaces cut across class... It's not what an object is that matters, it's what it does.
 
-Finding the Duck
-
 The key to removing the dependencies is to recognize that because a class's method serves a single purpose, it's arguments arrive wishing to collaborate to a single goal. Every argument is here for the same reason and that reason is unrelated to the argument's underlying class. 
 Avoid getting sidetracked by your knowledge of what each argument's class already does; think isntead about what the method needs. The final duck typed alternative is more abstract. It places slightly greater demands on your understanding but in return offers ease of extension. You can elicit new behavior from your application without changing any existing code. You simply turn another object into a Preparer and pass it into the Class's method. 
 
