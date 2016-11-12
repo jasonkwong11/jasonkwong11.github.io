@@ -13,12 +13,12 @@ Within your app, an object's type is in the eye of the beholder. Users of an obj
 
 Finding the Duck
 
-	The key to removing the dependencies is to recognize that because a class's method serves a single purpose, it's arguments arrive wishing to collaborate to a single goal. Every argument is here for the same reason and that reason is unrelated to the argument's underlying class. 
-	Avoid getting sidetracked by your knowledge of what each argument's class already does; think isntead about what the method needs. The final duck typed alternative is more abstract. It places slightly greater demands on your understanding but in return offers ease of extension. You can elicit new behavior from your application without changing any existing code. You simply turn another object into a Preparer and pass it into the Class's method. 
+The key to removing the dependencies is to recognize that because a class's method serves a single purpose, it's arguments arrive wishing to collaborate to a single goal. Every argument is here for the same reason and that reason is unrelated to the argument's underlying class. 
+Avoid getting sidetracked by your knowledge of what each argument's class already does; think isntead about what the method needs. The final duck typed alternative is more abstract. It places slightly greater demands on your understanding but in return offers ease of extension. You can elicit new behavior from your application without changing any existing code. You simply turn another object into a Preparer and pass it into the Class's method. 
 
-	The ability to tolerate ambiguity about the class of an object is the hallmark of a confident designer. Duck typing is related to polymorphism, the ability of many different objects to respond to the same message: they agree to be interchangeable from the sender's point of view. Any object implementing a polymorphic method can be substituted for any other; the sender of the message need not know or care about this substitution. Using duck typing relies on your ability to recognize the places where your application would benefit from across-class interfaces. It is relatively easy to implement a duck type; your design challenge is to notice that you need one and to abstract its interface.
+The ability to tolerate ambiguity about the class of an object is the hallmark of a confident designer. Duck typing is related to polymorphism, the ability of many different objects to respond to the same message: they agree to be interchangeable from the sender's point of view. Any object implementing a polymorphic method can be substituted for any other; the sender of the message need not know or care about this substitution. Using duck typing relies on your ability to recognize the places where your application would benefit from across-class interfaces. It is relatively easy to implement a duck type; your design challenge is to notice that you need one and to abstract its interface.
 	
-	These methods are signs you may be able to switch to duck types: case statements that switch on class, kind_of?, is_a?, and responds_to?
+These methods are signs you may be able to switch to duck types: case statements that switch on class, kind_of?, is_a?, and responds_to?
 
 Inheritance
 
