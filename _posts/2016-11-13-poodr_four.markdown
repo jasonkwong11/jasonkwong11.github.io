@@ -16,18 +16,18 @@ Modules are a way to define a named group of methods that are independent of cla
 
 Once you start putting code into modules and adding modules to objects, you expand the set of messages to which an object can respond and enter a new realm of design complexity. An object that directly implements fews methods might still have a very large response set including:
 
-	1. Those it implements
-	2. Those implemented in all objects above it in the hierarchy
-	3. Those implemented in any module that has been added to it 
-	4. Those implemented in all modules added to any object above it in the hierarchy 
+1. Those it implements
+2. Those implemented in all objects above it in the hierarchy
+3. Those implemented in any module that has been added to it 
+4. Those implemented in all modules added to any object above it in the hierarchy 
 
 Let Objects Speak for Themselves
 
-	You shouldn't have a seperate class (like StringUtils) to manage objects. Objects should manage themselves and contain their own behavior. (Like using a Schedule class to determine if a target is schedulable) Just as strings respond to empty? and can speak for themselves Targets should respond to schedulable? the schedulable? method should be added to the interface of the Schedulable role. 
+You shouldn't have a seperate class (like StringUtils) to manage objects. Objects should manage themselves and contain their own behavior. (Like using a Schedule class to determine if a target is schedulable) Just as strings respond to empty? and can speak for themselves Targets should respond to schedulable? the schedulable? method should be added to the interface of the Schedulable role. 
 
 Writing the Concrete Code
 
-	You have two decisions to make: Where should the code live? What should the code do? The simplest way to get started is to separate the two decisions and implement the schedulable? method directly in that class. Pick an arbitrary concrete class (for example, Bicycle) and implement the schedulable? method directly in that class. Once you have a version that works for Bicycle, you can refactor your way to a code arrangement that allows Schedulables to share that behavior. See figure 7.3 in the POODR. (summary: when a bicycle object calls .schedulable? method, it invokes Schedule's schedulable method. The Schedule object is newly instantiated in the attr_accessor of the Bicycle object... the code hides knowledge of who the Schedule is and what the Schedule does inside of Bicycle. Objects holding onto a Bicycle no longer need know about the existence or behavior of Schedule.)
+You have two decisions to make: Where should the code live? What should the code do? The simplest way to get started is to separate the two decisions and implement the schedulable? method directly in that class. Pick an arbitrary concrete class (for example, Bicycle) and implement the schedulable? method directly in that class. Once you have a version that works for Bicycle, you can refactor your way to a code arrangement that allows Schedulables to share that behavior. See figure 7.3 in the POODR. (summary: when a bicycle object calls .schedulable? method, it invokes Schedule's schedulable method. The Schedule object is newly instantiated in the attr_accessor of the Bicycle object... the code hides knowledge of who the Schedule is and what the Schedule does inside of Bicycle. Objects holding onto a Bicycle no longer need know about the existence or behavior of Schedule.)
 
 The difference between classical inheritance and sharing code via modules. This "is-a" (inheritance) versus "behaves-like-a" (modules) difference definitely matters, each choice has distinct consequences. However the coding techniques for these two things are very similar and this similarity exists because both techniques rely on automatic message delegation. 
  
@@ -43,7 +43,7 @@ A More Accurate Explanation: when a Bicycle includes Schedulable, all of the met
 
 A Very Nearly Complete Explanation: It's possible for hierarchy to contain a long chain of superclasses, each of which includes many modules. When a single class includes several different modules, the modules are place in the method lookup path in reverse order of module inclusion... the methods of the last included module are encountered first in the lookup path. You can include a module into a class using Ruby's include keyword. But it is possible to add a module's methods to a single object, using Ruby's extend keyword.
 
-	... because extend adds the module's behavior directly to an object, extending a class with a module creates class methods in that class and extending an instance of a class with a module creates instance methods in that instance. Any object can also have ad hoc methods added directly to its own personal "Singleton class". These ad hoc methods are unique to this specific object. Each of these alternatives adds to an object's response set by placing method definitions in specific and unambiguous places along the method lookup path.
+... because extend adds the module's behavior directly to an object, extending a class with a module creates class methods in that class and extending an instance of a class with a module creates instance methods in that instance. Any object can also have ad hoc methods added directly to its own personal "Singleton class". These ad hoc methods are unique to this specific object. Each of these alternatives adds to an object's response set by placing method definitions in specific and unambiguous places along the method lookup path.
 
 Inheriting Role Behavior
 
@@ -52,13 +52,13 @@ Now you can write modules that include other modules. You can write modules that
 Recognizing the Anti-patterns:
 
 1. An object that uses a variable with a name like "type" or "category" to determine what message to send self contains two highly related but slightly different types
-	... bad because code must change every time a new type is added
-	... instead, rearrange this code to use inheritance by putting the common code in abstract superclass and create subclasses for the different types (this allows you to create new subtypes by adding new subclasses.. extend the hierarchy without changing the existing code)
+... bad because code must change every time a new type is added
+... instead, rearrange this code to use inheritance by putting the common code in abstract superclass and create subclasses for the different types (this allows you to create new subtypes by adding new subclasses.. extend the hierarchy without changing the existing code)
 
 2. When a sending object checks the class of a receiving object to determine what message to send, you have overlooked a duck type. 
-	... bad cuz code must change every time you introduce a new class of receiver
-	... this role should be codified as a duck type and receivers should implement the duck type's interface. Once they do, the original object can send one single message to every receiver, confident that because each receiver plays the role it will understand the common message
-	... in addition to sharing an interface ^^, duck types might also share behavior. When they do, place the shared code in a module and include that module in each class or object that plays the role.
+... bad cuz code must change every time you introduce a new class of receiver
+... this role should be codified as a duck type and receivers should implement the duck type's interface. Once they do, the original object can send one single message to every receiver, confident that because each receiver plays the role it will understand the common message
+... in addition to sharing an interface ^^, duck types might also share behavior. When they do, place the shared code in a module and include that module in each class or object that plays the role.
 
 
 Insist on the Abstraction
