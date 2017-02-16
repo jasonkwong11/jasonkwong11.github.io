@@ -1,14 +1,13 @@
 # Site settings
-title: Jason's Dev Blog!
+title: Jason's Dev Blog
 header-img: img/home-bg.png
 email: jasonkwong11@gmail.com
 copyright_name: jasonkwong11
 description: > # this means to ignore newlines until "baseurl:"
-  Searching for Localhost:3000 in All the Wrong Places
+  Hi, you found the blog of a Rails and Javascript Developer!
 baseurl: "" # the subpath of your site, e.g. /blog
 twitter_username: jasonkwongish
 github_username:  jasonkwong11
-learn_profile: jasonkwong11
 email_username: jasonkwong11@gmail.com
 
 # Build settings
