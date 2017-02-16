@@ -21,8 +21,13 @@ h2,
 h3,
 h4,
 h5,
-h6
-
+h6 {
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  line-height: 1;
+  font-size: 13px;
+  margin-top: 0px;
+}
 a {
   color: #404040;
 }
@@ -417,4 +422,18 @@ body {
     font-weight: normal;
     font-style: normal;
 
+}
+
+.learn-icon {
+  position: relative;
+  top: 5px;
+  display: inline-block;
+  font-family: 'glyphterregular';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  color:#fff;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
