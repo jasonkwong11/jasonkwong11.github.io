@@ -26,12 +26,8 @@ Whitespace: usually insignificant, occasionally necessary to use to separate seq
 
 Two forms of comments:
 	1. Block comments: /* */
-		=> try not to use these because these pairs can occur in regex literals (and cause a syntax error ):
-```
-	/*
-		var rm_a = /a*/.match(s);
-	*/
-```
+		=> try not to use these because these pairs can occur in regex literals (and cause a syntax error )
+
 	2. Line ending comments: // 
 
 Names: a letter optionally followed by one or more letters, digits, or underbars. A name cannot be one of the reserved words. Used for statements, variables, property names, operators and labels.
@@ -55,22 +51,22 @@ Strings are immutable. Once it is made, a string can never be changed. But it is
 Statements:
 	A compilation unit contains a set of executable statements. In web browsers, each <script> tag delivers a compilation unit that is compiled and immediately executed. Lacking a linker, Javascript throws them all together in a common global namespace.
 
-	When used inside a function, the var statement defines the functions private variables.
+When used inside a function, the var statement defines the functions private variables.
 
-	The switch, while, for, and do statements are allowed to have an optional label prefix that interacts with the break statement.
+The switch, while, for, and do statements are allowed to have an optional label prefix that interacts with the break statement.
 
-	Statements can be an expression statement, disruptive statement, or try statement.
+Statements can be an expression statement, disruptive statement, or try statement.
 
-	Statements are executed from top to bottom. The sequence of execution can be altered by the conditional statements (if and switch), by the looping statements (while, for and do), by the disruptive statements (break, return, and throw), and by function invocation.
+Statements are executed from top to bottom. The sequence of execution can be altered by the conditional statements (if and switch), by the looping statements (while, for and do), by the disruptive statements (break, return, and throw), and by function invocation.
 
-	A block is a set of statements wrapped in curly braces. Blocks don’t create a new scope so variables should be defined at the top of the function not in blocks.
+A block is a set of statements wrapped in curly braces. Blocks don’t create a new scope so variables should be defined at the top of the function not in blocks.
 
-	Falsey values: false, null, undefined, the empty string ‘’, the number 0, the number NaN
-	Truthey: all other values (including the string ‘false’)
+Falsey values: false, null, undefined, the empty string ‘’, the number 0, the number NaN
+Truthey: all other values (including the string ‘false’)
 
 
-	Switch Statement: performs a multiway branch. It compares the expression for equality with all of the specified cases. The expression can produce a number or string. When an exact match is found, the statements of the matching case clause are executed. If there is no match, the optional default statements are executed.
-		- A case clause contains one or more case expressions. The case expressions need not be constants. The statements following a clause should be a disruptive statement to prevent fall through into the next case. The break statement can be used to exit from a switch.
+Switch Statement: performs a multiway branch. It compares the expression for equality with all of the specified cases. The expression can produce a number or string. When an exact match is found, the statements of the matching case clause are executed. If there is no match, the optional default statements are executed.
+	- A case clause contains one or more case expressions. The case expressions need not be constants. The statements following a clause should be a disruptive statement to prevent fall through into the next case. The break statement can be used to exit from a switch.
 
 var text;
 var fruits = document.getElementById("myInput").value;
