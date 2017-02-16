@@ -27,10 +27,11 @@ Whitespace: usually insignificant, occasionally necessary to use to separate seq
 Two forms of comments:
 	1. Block comments: /* */
 		=> try not to use these because these pairs can occur in regex literals (and cause a syntax error ):
+```
 	/*
 		var rm_a = /a*/.match(s);
 	*/
-
+```
 	2. Line ending comments: // 
 
 Names: a letter optionally followed by one or more letters, digits, or underbars. A name cannot be one of the reserved words. Used for statements, variables, property names, operators and labels.
