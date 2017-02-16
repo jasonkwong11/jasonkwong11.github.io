@@ -25,10 +25,10 @@ JS has a class free object system in which objects inherit properties directly f
 Whitespace: usually insignificant, occasionally necessary to use to separate sequences of characters that would otherwise be combined into a single token. 
 
 Two forms of comments:
-	1. Block comments: /* */
-		=> try not to use these because these pairs can occur in regex literals (and cause a syntax error )
+1. Block comments: /* */
+	=> try not to use these because these pairs can occur in regex literals (and cause a syntax error )
 
-	2. Line ending comments: // 
+2. Line ending comments: // 
 
 Names: a letter optionally followed by one or more letters, digits, or underbars. A name cannot be one of the reserved words. Used for statements, variables, property names, operators and labels.
 
@@ -68,22 +68,22 @@ Truthey: all other values (including the string ‘false’)
 Switch Statement: performs a multiway branch. It compares the expression for equality with all of the specified cases. The expression can produce a number or string. When an exact match is found, the statements of the matching case clause are executed. If there is no match, the optional default statements are executed.
 	- A case clause contains one or more case expressions. The case expressions need not be constants. The statements following a clause should be a disruptive statement to prevent fall through into the next case. The break statement can be used to exit from a switch.
 
-var text;
-var fruits = document.getElementById("myInput").value;
+	var text;
+	var fruits = document.getElementById("myInput").value;
 
-switch(fruits) {
-    case "Banana":
-        text = "Banana is good!";
-        break;
-    case "Orange":
-        text = "I am not a fan of orange.";
-        break;
-    case "Apple":
-        text = "How you like them apples?";
-        break;
-    default:
-        text = "I have never heard of that fruit...";
-}
+	switch(fruits) {
+	    case "Banana":
+	        text = "Banana is good!";
+	        break;
+	    case "Orange":
+	        text = "I am not a fan of orange.";
+	        break;
+	    case "Apple":
+	        text = "How you like them apples?";
+	        break;
+	    default:
+	        text = "I have never heard of that fruit...";
+	}
 
 A while statement performs a simple loop. If the expression is falsey, then the loop will break. While the expression is truthey, the block will be executed.
 
