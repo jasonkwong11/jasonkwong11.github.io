@@ -1,0 +1,122 @@
+---
+layout: post
+title:  "Good Parts Notes I: Objects"
+date:   2017-11-27 12:00:01-0400
+---
+
+Javascript objects are awesome, but can be very fickle and nuanced. They're great because they provide a lot of flexibility and are light weight.
+
+=== CHAPTER 4: Objects === 
+
+The simple types of JS, numbers, strings, booleans, null, and undefined are object-like in that they have methods, but they are immutable.
+
+Objects in JS are mutable keyed collections: arrays, functions, regex, and of course: objects.
+
+Objects are containers of properties, where a property has a name and a value. A property name can be any string, including the empty string. A property value can be any JS value except for undefined.
+
+Objects in JS are class free. There is no constraint on the names of the new properties or the values of properties. Objects are useful for collecting and organizing data. Objects can contain other objects.
+
+*** Objects in JS have prototype linkage feature: allows one object to inherit the properties of another. This can reduce object initialization time and memory consumption.
+
+Object Literals: allow you to create new object values.
+Example:
+  var empty_object = {};
+  var stooge = {
+     "first-name": "Jerome",
+     "last-name": "Howard"
+  }; 
+
+Remember: a property’s name can be any string, including the empty string. The quotes around a property’s name in an object literal are optional if the name would be a legal JS name and not a reserved word. 
+
+A property’s value can be obtained from any expression, including another object literal. Objects can be nested.
+
+Retrieval
+
+Values can be retrieved from an object by wrapping a string expression in a [ ] suffix. If the string expression is a constant, and if it is a legal JS name and not a reserved word, then the . (dot) notation can be used instead.
+
+*** The || operator can be used to fill in default values
+  var middle = stooge[“middle-name”] || “(none)”;
+  var status = flight.status || “unknown”
+
+*** Attempting to retrieve values from undefined will throw a TypeError. This can be guarded against with the && operator
+
+Example:
+  flight.equipment // undefined
+  flight.equipment.model // throw "TypeError"
+  flight.equipment && flight.equipment.model // undefined
+
+
+Update: a value in an object can be updated by assignment. If the property name already exists in the object, the property value is replaced: 
+  stooge[‘first-name’] = ‘Jerome’;
+
+** Functionally, you shouldn’t do this. Use Object.assign to create a new instance of that object.
+If the object doesn’t already have that property, the object is augmented.
+
+Reflection: retrieve the property and use typeof the examine the values obtained:
+  typeof flight.number // ‘number’
+  typeof flight.status // ‘string’
+
+Be careful because any property on the prototype chain can produce a value if it’s a function:
+  typeof flight.toString // ‘function’
+  typeof flight.constructor // ‘function’
+
+There are two approaches to dealing with these undesired properties:
+1. Have your program look for and reject function values. Generally when you are reflecting, you are interested in data, and so you should be aware that some values could be functions.
+2.  Use the hasOwnProperty method, which returns true if the object has a particular property. This doesn’t look at the prototype chain. Example:
+  flight.hasOwnProperty(‘number’)   // true
+  flight.hasOwnProperty(‘constructor’)  // false 
+
+Enumeration: the “for in” statement can loop over all of the property names in an object. The enumeration will include all of the properties — including functions and prototype properties that you might not be interested in — so filter out the values you don’t want using hasOwnProperty and type of to exclude functions. Example:
+
+  var name;
+  for (name in another_stooge){
+    if (typeof another_stooge[name] !== ‘function’){
+      document.writeIn(name + ‘: ’ + another_stooge[name])
+    }
+  }
+
+** There is no guarantee on the order of the names, so be careful. To assure the properties are in a certain order, avoid the “for in” statement, and instead make an array containing the names of the properties in the correct order:
+  
+  var i;
+  var properties = [
+    ‘first-name’,
+    ‘middle-name’,
+    ‘last-name’,
+    ‘profession’
+  ];
+
+  for (i = 0; i < properties.length; i += 1){
+    document.writeIn(properties[i] + ‘: ’ + another_stooge[properties[i]]);
+  }
+
+Delete: can be used to remove a property from an object. It will remove a property from the object if it has one… won’t affect the objects in the prototype linkage
+  another_stooge.nickname    // 'Moe'
+    // Remove nickname from another_stooge, revealing
+    // the nickname of the prototype.
+  delete another_stooge.nickname;
+  another_stooge.nickname    // 'Curly'
+
+Global Abatement: Avoid global variables by creating a single global variable for the app. Example:
+  var MYAPP = {};
+
+That variable is now a container for your application:
+
+  MYAPP.stooge = {
+    “first-name”: “Joe”,
+    “last-name”: “Howard:
+  } ;
+
+  MYAPP.flight = {
+    airline: “Oceanic”,
+    number: 815,
+    departure: {
+      IATA: “SYD”,
+      city: “Sydney”
+    },
+    arrival: {
+      IATA: “LAX”,
+      city: “Los Angeles”
+    }
+  }
+
+Reduce global variables to reduce the chance of mixing up the variables. It also makes the program easier to read because it’s obvious MYAPP.stooge refers to a top level structure.

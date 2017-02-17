@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "JavaScript: The Good Parts Notes I: Analyzing JS and Grammar"
-date:   2017-1-17 12:00:01-0400
+date:   2017-11-20 12:00:01-0400
 ---
 
 I've been neck deep in code for a while and recently had a chance to dive into Node and Javascript. Among searching for resources, a common title reappeared: Douglas Crockford's "Javascript: the Good Parts". So far I see why. Crockford blends precise language without getting overly complex in his explanations. Great railroad diagrams visually allow you to see the code. I highly recommend you pick up a copy! So without further ado, here are my notes on the first two chapters of "Javascript: the Good Parts" by Douglass Crockford.
