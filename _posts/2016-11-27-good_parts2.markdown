@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Good Parts Notes II: Objects"
-date:   2017-11-27 12:00:01-0400
+date:   2016-11-27 12:00:01-0400
 ---
 
 Javascript objects are awesome, but can be very fickle and nuanced. They're great because they provide a lot of flexibility and are light weight.
