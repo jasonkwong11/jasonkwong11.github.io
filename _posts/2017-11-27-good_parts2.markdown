@@ -34,9 +34,9 @@ Retrieval
 
 Values can be retrieved from an object by wrapping a string expression in a [ ] suffix. If the string expression is a constant, and if it is a legal JS name and not a reserved word, then the . (dot) notation can be used instead.
 
-The || operator can be used to fill in default values
-var middle = stooge[“middle-name”] || “(none)”;
-var status = flight.status || “unknown”
+The pipe operator can be used to fill in default values
+    var middle = stooge[“middle-name”] || “(none)”;
+    var status = flight.status || “unknown”
 
 Attempting to retrieve values from undefined will throw a TypeError. This can be guarded against with the && operator
 
@@ -54,6 +54,7 @@ Update: a value in an object can be updated by assignment. If the property name 
 If the object doesn’t already have that property, the object is augmented.
 
 Reflection: retrieve the property and use typeof the examine the values obtained:
+
     typeof flight.number // ‘number’
     typeof flight.status // ‘string’
 
@@ -97,6 +98,7 @@ Enumeration: the “for in” statement can loop over all of the property names 
     }
 
 Delete: can be used to remove a property from an object. It will remove a property from the object if it has one… won’t affect the objects in the prototype linkage
+
     another_stooge.nickname    // 'Moe'
       // Remove nickname from another_stooge, revealing
       // the nickname of the prototype.
@@ -104,7 +106,8 @@ Delete: can be used to remove a property from an object. It will remove a proper
     another_stooge.nickname    // 'Curly'
 
 Global Abatement: Avoid global variables by creating a single global variable for the app. Example:
-  var MYAPP = {};
+
+    var MYAPP = {};
 
 That variable is now a container for your application:
 
