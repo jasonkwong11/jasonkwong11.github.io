@@ -1,10 +1,10 @@
 ---
 layout: post
 title:  "Functional Invocation Patterns and Augmentation (JS: Good Parts)"
-date:   2016-11-27 12:00:01-0400
+date:   2016-12-04 12:00:01-0400
 ---
 
-Ever wish you could you had intuitive methods from another language that the standard JS library doesn't have? Great news: you can make your own with by augmenting Object prototypes! Read on to learn more.
+Ever wish you could you had intuitive methods from another language that the standard JS library doesn't have? Great news: you can make your own with by augmenting Object prototypes! Read on to learn more. (Also buy Douglas Crockford's Javascript: The Good Parts!!)
 
 
 Functions are the fundamental modular unit of javascript. They enclose a set of statements, used for code reuse, information hiding and composition. They specify the behavior of objects. 
