@@ -1,0 +1,280 @@
+---
+layout: post
+title:  "Functions Part II: Recursion, Closures and Memoization  (JS: Good Parts)"
+date:   2016-12-11 12:00:01-0400
+---
+
+Recursion: a recursive function is a function that calls itself, either directly or indirectly. This is a powerful technique in which a problem is divided into a set of similar subproblems, each solved with a trivial solution.
+
+A recursive function calls itself to solve its subproblems.
+
+Example: Tower of Hanoi: moving a stack of disks, (small on top of large) from one post to another by moving one at a time and never placing a larger disk on a smaller disk. Here’s the recursive solution:
+  
+    // disc number, source post, auxiliary post, destination post
+    var hanoi = function (disc, src, aux, dest) {
+      if (disc > 0) {
+        hanoi(disc - 1, src, dest, aux);
+        console.log(`Move disc ${disc} from ${src} to ${dest}` );
+        hanoi(disc - 1, aux, src, dest);
+      }
+    };
+    
+    hanoi(3, ‘src, ‘aux, ‘dest’);
+
+This function breaks the problem into 3 subproblems. First it uncovers the bottom disc by moving the substack above it to the auxiliary post. Second, it can the move the bottom disc to the destination post. Third: it can move the substack from the auxiliary post to the destination post.
+
+When the hanoi function calls itself, it deals with the disc that is above the dis it is currently working on. Eventually it will be called with a nonexistent disc number. In that case, it does nothing.
+
+Recursive functions can be very effective in manipulating tree structures such as the DOM. Each recursive call is given a smaller piece of the tree to work on.
+
+    // Define a walk_the_DOM function that visits every node
+    // of the tree in HTML source order, starting
+    // from some given node. It invokes a function,
+    // passing it each node in turn. walk_the_DOM calls
+    // itself to process each of the child nodes.
+
+    var walk_the_DOM = function walk(node, func){
+      func(node);
+      node = node.firstChild;
+      while (node) {
+        walk(node, func);
+        node = node.nextSibling;
+      }
+    };
+
+    // Define a getElementByAttribute function. It 
+    // takes an attribute name string and an optional
+    // matching value. It calls walk_the_DOM, passing
+    // it a function that looks for an attribute name in the
+    // node. The matching nodes are accumulated in a results array.
+
+    var getElementsByAttributes = function ( att, value) {
+      var results = [];
+      
+      walk_the_DOM(document.body, function(node)){
+        var actual = node.nodeType === 1 && node.getAttributes(att);
+        if (typeof actual === ‘string’ && ( actual === value || typeof value !== ‘string’ )){
+          results.push(node);
+        }
+      });
+      return results;
+    };
+
+
+Scope: controls the visibility and lifetimes of variables and params. It reduces naming collisions and provides automatic memory management:
+
+    var foo = function () {
+      var a = 3, b = 5;
+      var bar = function (){
+        var b = 7, c = 11;
+      // At this point, a is 3, b is 7, and c is 11
+        a += b + c;
+      // At this point, a is 21, b is 7, and c is 11
+      };
+    //At this point a is 3, b is 5, and c is undefined;
+    bar();
+    //At this point, a is 21, b is 5
+    };
+
+JS doesn’t have block scope. (All variables defined in a block are not visible from outside of the block. The variables defined in a block can be released when execution of the block is finished. This is good) 
+
+Instead, JS has function scope: That means the parameters and variables defined in a function are not visible outside of the function, and that a variable defined anywhere within a function is visible everywhere within the function.
+=> This means declare all variables used in a function at the top of the function body
+
+Closures:
+  Good news: inner functions get access to parameters and variables of the functions they are defined within (except this and arguments). 
+
+    var myObject = function ( ) {
+      var value = 0;
+
+      return {
+        increment: function (inc) {
+          value += typeof inc === ‘number’ ? inc: 1;
+        },
+        getValue: function(){
+          return value;
+        }
+      }
+    }();
+
+^^ we’re initializing myObject by calling a function that returns an object literal. NOT ASSIGNING A FUNCTION TO MYOBJECT
+The function defines a value variable. The value variable is always available to the increment and getValue methods, but the function’s scope keep it hidden from the rest of the program.
+
+    //Create a maker function called quo. It makes an object 
+    // with a get_status method and a private status property
+
+    var quo = function (status) {
+      return {
+        get_status: function(){
+          return status;
+        }
+      };
+    }
+
+    // Make an instance of quo
+
+    var myQuo = quo(“amazed”);
+
+    console.log(myQuo.getStatus());
+
+This quo function is designed to be used without the new prefix, so the name is not capitalized. When we call quo, it returns a new object containing a get_status method. 
+
+**get_status doesn’t have access to a copy of the parameter, it has access to the parameter itself. This is possible because the function has access to the context in which it was created. This is called closure.
+
+Another More Useful Example of Closure:
+  
+    //Define a function that sets a DOM node’s color to yellow and then fades it to white.
+
+    var fade = function (node) {
+      var level = 1;
+      var step = function () {
+        var hex = level.toString(16);
+        node.style.backgroundColor = ‘##FFFF’ + hex + hex;
+        if (level < 15 ){
+          level += 1;
+          setTimeout(step, 100);
+        }
+      };
+      setTimeout(step, 100);
+    };
+    fade(document.body);
+
+** INNER FUNCTION HAS ACCESS TO THE ACTUAL VARIABLES OF THE OUTER FUNCTIONS (NOT COPIES), EVEN IF THE OUTER FUNCTION HAS ALREADY RETURNED.
+
+
+    //Bad Example:
+
+    //Make a function that assigns event handler functions to an array of nodes the wrong way.
+    // When you click on a node, an alert box is supposed to display the ordinal of the node.
+    // But it always displays the number of nodes instead.
+
+    var add_the_handlers = function (nodes) {
+      var i;
+      for (i=0; i < nodes.length; i += 1){
+        nodes[i].onclick = function (e){
+          alert(i);
+        }
+      } 
+    }
+
+The add_the_handlers functions was supposed to give each handler a unique number (i). It fails because the handler functions are bound to the variable i, not the value at the time the function was made. (Avoid this problem by making sure the inner function has access to the actual variables of the outer functions and not copies)
+
+    //Better example:
+    //Make a function that assigns event handler functions to an array of nodes the right way
+    // When you click on a node, an alert box will display the ordinal of the node.
+
+    var add_the_handlers = function (nodes) {
+      var i;
+      for (i = 0; i < nodes.length; i += 1){
+        nodes[i].onclick = function(i){
+          return function (e){
+            alert(e);
+          }
+        }
+      }
+    }
+
+^^ Now instead of assigning a function to onclick, we define a function and immediately invoke it, passing it in i. That function will return an event handler function that is bound to the value of i that was passed in, not to the i defined in the add_the_handlers. That returned function is assigned to onclick.
+
+Callbacks:
+Functions make it easier to deal with discontinuous events (a sequence that begins with a user interaction, making a request of the server and finally displaying the server’s response.)
+
+Async request:
+    //We pass a function param to send_request_asynchronously
+    // that will be called when the response is available
+
+    request = prepare_the_request();
+    send_request_asynchronously(request, function( response ){
+      display(response);
+    })
+
+Modules: a function or object that presents an interface but that hides its state and implementation.
+  
+We can use functions and closure to make modules. Modules help us almost completely eliminate our use of global variables. Remember: a closure immediately invokes the function we just made.
+
+General pattern of a module: a function that defines private variables and functions; creates privileged functions which, through closure, will have access to the private variables and functions… and returns the privileged functions and stores them in an accessible place.
+==> Use this module pattern to eliminate use of global variables… it promotes information hiding and other good design patterns. It’s very effective in encapsulating applications and other singletons.
+
+It can also be used to produce objects that are secure.
+
+Cascade: in a cascade, we can call many methods on the same object in a single statement:
+  .then
+  .then
+  .catch
+
+Some methods don’t have a return value. E.g.: methods that set or change the state of an object to return nothing. If we have those methods return THIS instead of undefined, we can enable cascades. 
+
+Curry: allows us to produce a new function by combining a function and an argument. (because functions are values and we can manipulate function values)
+
+    var add1 = add.curry(1);
+    console.log(add1(6));   // 7
+
+here’s how you augment Function.prototype to add a curry method:
+
+    Function.method(‘curry’, function(){
+
+      var slice = Array.prototype.slice
+      var args = arguments, that = this;
+      return function (){
+        return that.apply(null, args.concat(slice.apply(arguments)));
+      };
+    });
+
+^^ This curry method works by creating a closure that holds that original function and the arguments to curry. It returns a function that, when invoked returns the result of the calling that original function, passing it all of the arguments from the invocation of the curry and the current invocation. It uses the Array concat method to concatenate the two arrays of arguments together.
+
+slice is used because Arguments array doesn’t have array qualities
+
+Memoization: functions can use objects to remember the results of previous operations, making it possible to avoid unnecessary work (recursive functions). JS’s objects and arrays are very convenient for this.
+
+Example:
+
+    var fibonacci = function (n) {
+      return n < 2 ? n : fibonacci(n-1) + fibonacci(n-2);
+    };
+
+    for (var i = 0; i <= 10; i += 1){
+      console.log(‘//’ + i + ‘: ‘ + fibonacci(i));
+    }
+    // 0: 0
+    // 1:1
+    // 2:1
+    // 3:2
+    // 4:3
+    …
+    //10: 55
+
+  This works but is a lot of unnecessary work. The fibonacci function is called 453 times, computing values that were already computed. If we memorize the function we can reduce its workload.
+
+  We keep our memorized results in a memo array that we hide in a closure. When our function is called, it first looks to see if it already knows the result. If it does, it can immediately return it:
+
+    var fibonacci = function () {
+      var memo = [ 0, 1];
+      var fib = function (n) {
+        var result = memo[n];
+        if (typeof result !== ‘number’){
+          result = fib(n - 1) + fib(n - 2);
+          memo[n] = result;
+        }
+        return result;
+      };
+      return fib;
+    }( );
+
+This function returns the same but it is called only 29 times. We can generalize this by making a function that helps us memorize functions. It takes an initial memo array and fundamental function. It returns a shell function that manages the memo store and that calls the fundamental function as needed. We pass the shell function and the function’s parameters to the fundamental function:
+
+    var memorizer = function (memo, fundamental){
+      var shell = function (n) {
+        if (typeof result !== ‘number’){
+          result = fundamental(shell, n);
+          memo[n] = result;
+        }
+      return result;
+      };
+    return shell;
+    };
+
+We can define fibonacci with the memorizer, providing the initial memo array and fundamental function
+
+    var fibonacci = memorizer([0,1], function (shell, n) {
+      return shell(n-1) + shell(n-2);
+    });
