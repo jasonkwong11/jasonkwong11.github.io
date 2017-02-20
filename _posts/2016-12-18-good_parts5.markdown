@@ -123,34 +123,34 @@ Prototypal Pattern: no classes! Prototypal inheritance is conceptually simpler t
 
 1. Make a useful object:
     
-    var myMammal = {
-      name: ‘Herb the Mammal’,
-      get_name: function( ){
-        return this.name;
-      },
-      says: function ( ){
-        return this.saying || ‘’;
-      }
-    };
+      var myMammal = {
+        name: ‘Herb the Mammal’,
+        get_name: function( ){
+          return this.name;
+        },
+        says: function ( ){
+          return this.saying || ‘’;
+        }
+      };
 
 2. Then make many more objects that are like that one:
 
-    var myCat = Object.create(myMammal);
-    myCat.name = ‘Henrietta’;
-    myCat.saying = ‘meow’;
-    myCat.purr = function (n) {
-      var i, s = ‘’;
-      for (i = 0; i < n; i += 1){
-        if (s){
-          s+= ‘-‘;
-        }
-        s += ‘r’;
+      var myCat = Object.create(myMammal);
+      myCat.name = ‘Henrietta’;
+      myCat.saying = ‘meow’;
+      myCat.purr = function (n) {
+        var i, s = ‘’;
+        for (i = 0; i < n; i += 1){
+          if (s){
+            s+= ‘-‘;
+          }
+          s += ‘r’;
+        };
+        return s;
       };
-      return s;
-    };
-    myCat.get_name = function( ) {
-      return this.says() + ‘ ‘ + this.name + ‘ ‘ + this.says();
-    };
+      myCat.get_name = function( ) {
+        return this.says() + ‘ ‘ + this.name + ‘ ‘ + this.says();
+      };
 
 => The classification process of breaking an application down into a set of nested abstract classes can be completely avoided.
 
