@@ -1,0 +1,279 @@
+---
+layout: post
+title:  "Use Functional Inheritance In JS (Not OO Classes)"
+date:   2016-12-18 12:00:01-0400
+---
+
+A common mistake is trying to use JS as an OO language. While you could make it work applying OO classical design, JS is is at its best when you use it functionally. That means creating functions that return objects and then using inheritance to specify attributes as needed. This post explores the do's and don'ts of JS's inheritance patterns.
+
+Again, this is all from Douglas Crockford's "Javascript: The Good Parts". Get a copy! 
+
+
+Inheritance: allows you to 
+  1. reuse patterns of code
+  2. specify a system of types: frees you from writing explicit casting operations.
+
+JS is loosely typed, never casts: The lineage of an object is irrelevant. What matters about an object is what it can do, not what it descended from. But it can mimic the classical pattern, but also supports the other patterns that are more expressive.
+
+In classical languages, objects are instances of classes, and a class can inherit from another class. JS is a prototypal language, which means that objects inherit directly from other objects.
+
+Here are the most straightforward patterns:
+
+Pseudoclassical:
+
+When a function object is created, the Function constructor that produces the function object runs some code like this:
+    this.prototype = { constructor: this };
+
+The new function object is given a prototype property whose value is an object containing a constructor property whose value is the new function object. The prototype object is the place where inherited traits live.
+
+Every function gets a prototype object because the language doesn’t provide a way of determining which functions are intended to be constructors. The constructor property is not useful. It is the prototype object that is important.
+
+When a function is invoked with the constructor invocation pattern using the new prefix, this modifies the way in which the function is executed. If the new operator were a method instead of an operator, it could have been implemented like this:
+
+    Function.method(‘new’, function(){
+      //Create a new object that inherits from the
+      //constructor’s prototype.
+
+      var that = Object.create(this.prototype);
+      
+      //Invoke the constructor, binding -this- to
+      //the new object.
+
+      var other = this.apply(that, arguments);
+
+      // If it’s return value isn’t an object,
+      // substitute the new object.
+
+      return (typeof other === ‘object’ && other ) || that;
+    });
+
+We can define a constructor and augment it’s prototype:
+  
+    var Mammal = function (name) {
+      this.name = name;
+    };
+
+    Mammal.prototype.get_name = function () {
+      return this.name;
+    };
+
+    Mammal.prototype.says = function () {
+      return this.saying || ‘’;
+    };
+
+Now we can make an instance:
+
+    var myMammal = new Mammal(‘Herb the Mammal’);
+    var name = myMammal.get_name(); // ‘Herb the Mammal’
+
+We can make another pseudo class that inherits from Mammal by defining its constructor function and replacing its prototype with an instance of Mammal:
+
+    var Cat = function (name) {
+      this.name = name;
+      this.saying = ‘meow’;
+    };
+
+    //Replace Cat.prototype with a new instance of Mammal
+
+    Cat.prototype = new Mammal( );
+    
+    //Augment the new prototype with purr and get_name methods.
+
+    Cat.prototype.purr = function (n){
+      var i, s = ‘’;
+      for (i = 0; i < n; i += 1){
+        if (s){
+          s += ‘-‘;
+        }
+        s += ‘r’;
+      }
+      return s;
+    };
+    
+    Cat.prototype.get_name = function(){
+      return this.says() + ‘ ‘ + this.name + ‘ ‘ + this.says();
+    };
+
+    var myCat = new Cat(‘Henrietta’);
+    var says = myCat.says(); //‘meow’
+    var purr = myCat.purr(5); // ‘r-r-r-r-r’
+    var name = myCat.get_name(); // ‘meow Henrietta meow’;
+
+  .. looks alien…constructor functions acts like classes, but there are surprising behavior: no privacy, all properties are public, no access to super methods… if you forget the new prefix when calling a constructor function, then this will not be bound to a new object. BUT THE GLOBAL OBJECT :(
+  *** TRY NOT TO USE JS THIS WAY (CLASSICALLY)
+
+Object Specifiers: if a constructor is given a large number of parameters, we can write the constructor to accept a single object specifier instead. That object contains the specification of the object to be constructed:
+
+So instead of of:
+
+    var myObject = maker(f, l, m, c, s);
+
+We can write:
+
+    var myObject = maker({
+      first: f,
+      last: l,
+      state: s,
+      city: c
+    })
+^^ The arguments can now be listed in any order, arguments can be left out if the constructor is smart about defaults and code is much easier to read.
+
+
+Prototypal Pattern: no classes! Prototypal inheritance is conceptually simpler than classical inheritance: a new object can inherit the properties of an old object. 
+
+1. Make a useful object:
+    
+    var myMammal = {
+      name: ‘Herb the Mammal’,
+      get_name: function( ){
+        return this.name;
+      },
+      says: function ( ){
+        return this.saying || ‘’;
+      }
+    };
+
+2. Then make many more objects that are like that one:
+
+    var myCat = Object.create(myMammal);
+    myCat.name = ‘Henrietta’;
+    myCat.saying = ‘meow’;
+    myCat.purr = function (n) {
+      var i, s = ‘’;
+      for (i = 0; i < n; i += 1){
+        if (s){
+          s+= ‘-‘;
+        }
+        s += ‘r’;
+      };
+      return s;
+    };
+    myCat.get_name = function( ) {
+      return this.says() + ‘ ‘ + this.name + ‘ ‘ + this.says();
+    };
+
+=> The classification process of breaking an application down into a set of nested abstract classes can be completely avoided.
+
+Instead ^^ this is differential inheritance. By customizing a new object, we specify the differences from the object on which it is based. 
+
+
+Functional Patterns:
+  One weakness of the inheritance patterns we have seen is that we get no privacy. All properties of an object are visible. We get no private variables and no private methods.
+
+To use a functional pattern, make a function that will produce objects:
+
+1. It creates a new object. By: 1. It can create an object literal, 2. it can call a constructor function with the new prefix, 3) use Object.create to make a new instance from an existing object, 4. call a function that returns an object
+
+2. It optionally defines private instance variables and methods. These are ordinary vars of the function.
+
+3. It augments that new object with methods. Those methods will have privileged access to params and the variables defined in the second step.
+
+4. It returns that new object
+
+Here’s a template for a functional constructor:
+
+    //spec object contains all of the information the constructor needs to make an instance
+    //can be copied in to private variables or transformed by other functions.
+    //methods can access info from spec if needed.
+    //spec can also be replaced with a single value.
+
+    var constructor = function (spec, my) {
+      var that, other private instance variables;
+      //my object is a container of secrets that are shared by the constructors in the inheritance chain. this is optional.
+      my = my || {};
+      
+      //declare the private instance variables and private methods for the object
+      // the variables and inner functions of the constructor become the private members of the instance
+      // inner functions have access to spec, my, that, and the private variables
+
+      // my.member = value;
+      (Add shared variables and functions to my)
+
+      that = a new object;
+
+      (Add privileged methods to that)
+
+      return that;
+    };
+
+Now we can augment that instance of the constructor function:
+
+    var methodical = function (){
+      …
+    };
+    that.methodical = methodical;
+
+^^ the advantage to defining methodical in two steps is that if other methods want to call methodical, they can call methodical() instead of that.methodical(). If the instance is damaged or tampered with so that that.methodical is replaced, the methods that call methodical will continue to work the same because their private methodical is not affected by the modification of the instance.
+
+Here is this functional pattern applied to the mammal example. We don’t need my here so we’ll leave it out, but we’ll use a spec object:
+
+The name and saying properties are now completely private. They are accessible only via the privileged get_name and says methods:
+
+    var mammal = function(spec){
+      var that = {};
+
+      that.get_name = function(){
+        return spec.name;
+      };
+
+      that.says = function(){
+        return spec.saying || ‘’;
+      };
+      return that;
+    };
+    var myMammal = mammal({ name: ‘Herb’});
+
+In the pseudoclassical pattern, the Cat constructor function had to duplicate work that was done by the Mammal constructor. That isn’t necessary in the functional pattern because the Cat constructor will call the Mammal constructor, letting Mammal do most of the work of object creation, so Cat only has to concern itself with the differences:
+
+    var cat = function (spec) {
+      spec.saying = spec.saying || ‘meow’;
+      var that = mammal(spec);
+      that.purr = function (n){
+        var i, s = ‘’;
+        for (i = 0; i < n; i += 1){
+          if (s){
+            s += ‘-‘;
+          }
+          s += ‘r’;
+        }
+        return s;
+      };
+      that.get_name = function (){
+        return that.says() + ‘ ‘ + spec.name + ‘ ‘ + that.says();
+      return that;
+      }
+    };
+    var myCat = cat({name: ‘Henrietta’});
+
+
+You can make a superior method to deal with super methods. It takes a method name and returns a function that invokes that method. The function will invoke the original method even if the property is changed:
+
+    Object.method(‘superior’, function)(name){
+      var that = this,
+        method = that[name];
+      return function(){
+        return method.apply(that, arguments);
+      };
+    });
+
+
+Here’s how you can use superior to get a super the get_name method:
+
+    var coolcat = function(spec){
+      var that = cat(spec),
+      var super_get_name = that.superior(’get_name’);
+      that.get_name = function(n) {
+        return ‘like ’ + super_get_name() + ‘ baby’;
+      };
+      return that;
+    };
+
+    var myCoolCat = coolcat({name: ‘Bix’});
+    var name = myCoolCat.get_name();
+      // ‘like meow Bix meow baby’
+
+This functional pattern has a great deal of flexibility. It requires less effort than the pseudoclassical pattern, and gives us better encapsulation and information hiding and access to super methods.
+
+If all of the state of an object is private, then the object is tamper-proof. Properties of the object can be replaced or deleted, but the integrity of the object is not compromised. If we create the object in the functional style, and if all of the methods of the object make no use of this or that, then the object is durable. A durable object is simply a collection of functions that act as capabilities.
+
+Parts: we can compose our objects out of a sets of parts. For example, we can make a function that can add simple event processing features to any object. It adds an on method, a fire method and a private event registry
