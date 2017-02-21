@@ -1,0 +1,84 @@
+---
+layout: post
+title:  "Javascript Arrays"
+date:   2016-12-25 12:00:01-0400
+---
+
+Instead of actual arrays, Javascript provides an object that has some array-like characteristics. It converts array subscripts into strings that are used to make properties. It’s slower than a real array, but more convenient to use. Retrieval and updating of properties work the same as with objects, except that there is a special trick with integer property names (property names === indexes). 
+
+Array Literals:
+
+    var empty = [];
+    var numbers = [‘zero’, ‘one’, ‘two’, ‘three’, ‘four’];
+
+    empty[1] //undefined
+    numbers[1] //‘one’
+
+    empty.length  //0
+    numbers.length //10
+
+Arrays inherit from Array.prototype, and get the length method. Javascript arrays allow elements to be mixtures of different types (string, number, boolean, etc.)
+
+Length: every array has a length property. Unlike most other languages, JS’s array length is not an upper bound. Instead, JS’s length is the largest integer property name in the array plus one. 
+
+Not necessarily the number of properties in the array:
+   
+    var myArray = [];
+    myArray.length //0
+
+    myArray[100000] = true;
+    myArray.length  // 100001
+    //myArray contains one property.
+
+The [] postfix subscript operator converts its expression to a string using the expression’s toString method if it has one. That string will be used as the property name. If the string looks like a positive integer greater than or equal to the array’s current length and is less than 4,294,967,295, then the length of the array is set to the new subscript plus one.
+
+The length can be set explicitly. Making the length longer does not allocate more space for the array. Making the length smaller will cause all properties with a subscript that is greater than or equal to the new length to be deleted
+
+A new element can be appended to the end of an array by assigning to the array’s current length: 
+
+    numbers[numbers.length] = ‘shi’;
+    // numbers is [‘zero’, ‘one’, ‘two’, ‘shi’]
+
+    //Can use push method to do same thing.
+
+Delete: since JS’s arrays are really objects, the delete operator can be used to remove elements from an array:
+
+    delete numbers[2];
+    // numbers is [‘zero’, ‘one’, undefined, ‘she’, ‘go’]
+    // this leaves a hole in the array
+
+Instead use splice method: deletes some number of elements and replaces them with other elements.
+The first argument is an ordinal in the array. The second argument is the number of elements to delete.
+
+    numbers.splice(2,1); // delete at index 2, 1 element
+    //numbers is [‘zero’, ‘one’, ‘she’, ‘go’]
+
+Confusion: a common error in JS is to use an object when an array is required, or vice versa. Here is the rule: when the property names are small sequential integers, you should use an array. Otherwise use an object.
+
+JS itself is confused about the diff between arrays and objects. The typeof operator reports that the type of an array is ‘object’, which isn’t very helpful.
+
+JS doesn’t have a good mechanism to distinguish between arrays and objects.
+
+Methods:
+
+JS provides a set of methods for acting on arrays. The methods are functions stored in Array.prototype.
+You can augment Array.prototype to add methods. Every array will inherit the method. Arrays are most useful when the property names are integers, but they are still objects, and objects can accept any string as a property name.
+
+
+Dimensions:
+
+JS arrays are usually not initialized. Be aware that new arrays are empty and missing elements are undefined. Set every element before you attempt to retrieve them. If you implement algorithms that assume every element starts with a known value (such as 0), then you must prep the array yourself.
+
+Here’s how you can make a matrix function
+
+    Array.matrix = function(m, n, initial){
+      var a, i, j, mat=[];
+      for (i =0; i < m; i += 1){
+        a=[];
+        for (j = 0; j < n; j += 1){
+          a[j] = initial;
+        }
+        mat[i] = a;
+      }
+      return mat;
+    };
