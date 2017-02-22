@@ -115,15 +115,15 @@ Let’s call parse_url’s exec method. It should return an array containing pie
         url:    http://www.ora.com:80/goodparts?q#fragment
             scheme: http
          slash:  //
-        host:
-        port:
-        path:
+        host: www.ora.com
+        port: 80
+        path: goodparts
         query:  q
         hash:   fragment
 
 How to make a RegEx object: the preferred way is to use a regex literal seen above
-        //Make a regex that matches a Javascript string
-         var my_regexp = /"(?:\\.|[^\\\"])*"/g;
+            // Make a regex that matches a Javascript string
+            var my_regexp = /"(?:\\.|[^\\\"])*"/g;
 
 Another way is to use the RegExp constructor. The constructor takes a string and compiles it into a RegExp object. Careful: backslash have a somewhat different meaning in regex than string literals. It is usually necessary to double the backslashes and escape the quotes.
 
