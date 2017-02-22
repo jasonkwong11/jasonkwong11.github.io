@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Javascript Arrays"
+title:  "Javascript Arrays and Regex"
 date:   2016-12-25 12:00:01-0400
 ---
 
@@ -82,3 +82,61 @@ Here’s how you can make a matrix function
       }
       return mat;
     };
+
+
+Regex: specification of the syntax of a simple language. Used to search, replace, and extract information from strings. The methods that work with regex are regexp.exec, regex.test, string.match, string.replace, string.search, string.split
+
+JS’s regular expressions are difficult to read in part because they do not allow comments or whitespace. All of the parts of a regular expression are pushed tightly together, making them almost indecipherable. This is a particular concern when they are used in security applications for scanning and validation: if you cannot read and understand a regular expression, how can you have confidence that it will work correctly for al inputs?
+
+Example: Here’s a regex that matches URLs:
+
+        var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
+
+        var url = “http://www.ora.com:80/goodparts?q#fragment”;
+
+Let’s call parse_url’s exec method. It should return an array containing pieces extracted from the url:
+
+        var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
+
+        var url = “http://www.ora.com:80/goodparts?q#fragment”;
+
+        var result = parse_url.exec(url);
+
+        var names = [ ‘url’, ‘scheme’, ’slash’, ‘host’, ‘port’, ‘path’, ‘query’, ‘hash’];
+
+        var blanks = ‘      ‘;
+        var i;
+
+        for (i = 0; i < names.length; i += 1){
+            console.log(names[i] + ‘:’ + blanks.substring(names[i].length), result[i]);
+        }
+
+        //This produces:
+        url:    http://www.ora.com:80/goodparts?q#fragment
+            scheme: http
+         slash:  //
+        host:
+        port:
+        path:
+        query:  q
+        hash:   fragment
+
+How to make a RegEx object: the preferred way is to use a regex literal seen above
+        //Make a regex that matches a Javascript string
+         var my_regexp = /"(?:\\.|[^\\\"])*"/g;
+
+Another way is to use the RegExp constructor. The constructor takes a string and compiles it into a RegExp object. Careful: backslash have a somewhat different meaning in regex than string literals. It is usually necessary to double the backslashes and escape the quotes.
+
+        //Make a regex object that matches a JS string
+         var my_regexp = new RegExp("\"(?:\\.|[^\\\\\\\"])*\"", 'g');
+        // the second parameter is a string specifying the flags. This RegEx constructor is useful when a regular expression must be generated at runtime using material that is not available to the programmer.
+
+    Properties of Regex objects: 
+    1. global true … if the g flag was used
+    2. ignoreCase … true if the i flag was used 
+    3. lastIndex … The index at which to start the next exec match. Initially it is zero.
+    4. multiline… true if the m flag was used.
+    5. source … the source text of he regex.
+
+When in doubt, any special character can be given a \ prefix to make it literal.
+
