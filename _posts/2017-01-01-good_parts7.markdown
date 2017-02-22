@@ -1,0 +1,154 @@
+---
+layout: post
+title:  "The Most Useful Methods in Javascript"
+date:   2017-01-01 12:00:01-0400
+---
+
+Here are the most useful methods in Javascript (not meant to be the most in depth descriptions, but a quick reference):
+
+Javascript includes a small set of standard methods that are available on the standard types.
+
+Array Methods:
+
+1. array.concat(item…)
+-produces a new array containing a shallow copy of this array with the items appended to it. Can combine two arrays with this:
+
+    var a = [1, 2 ,3];
+    var b = [4, 5, 6,];
+    var c = a.concat(b, true);
+    // c is [1, 2, 3, 4, 5, 6, true]
+
+2. array.join(separator)
+-makes a string from an array. It does this by making a string of each of the array’s elements then concatenating them all together with a separator between them. The default separator is ‘,’.
+
+3. array.pop()
+-removes and returns the last element from this array. If the array is empty, it returns undefined.
+
+4. array.push(item)
+-appends items to the end of array. Unlike concat, it modifies the array and appends array items whole. it returns the new length of the array.
+
+    var a = [1, 2 ,3];
+    var b = [4, 5, 6,];
+    var c = a.concat(b, true);
+    // a is [1, 2, 3, [4, 5, 6], true]
+    // c is 5;
+
+
+5. array.reverse()
+-The reverse method modifies array by reversing the order of the elements. It returns the array.
+
+    var a = [1, 2, 3]
+    var b = a.reverse();
+    // both a and b are [3, 2, 1] **it changes the original
+
+6. array.shift()
+-The shift method removes the first element from an array and returns it. If the array is empty, it returns undefined. Shift is usually much slower than pop
+  
+7. array.slice(start, end)
+-The slice method makes a shallow copy of a portion of an array. The first element copied will be array[start]. It will stop right before array[end]. The end param is optional and the default is array.length.If either param is negative, array.length will be added to them to make them nonnegative. If start is greater than or equal to array.length, the result will be a new empty array. Don’t confuse with splice.
+
+8. array.sort(comparefn)
+-The sort method sorts the contents of an array in place. It sorts arrays of numbers incorrectly because it assumes the elements are strings. 
+
+    n.sort(function(a, b){
+      return a - b;
+    });
+    // This will sort numbers but not strings
+
+9. array.splice(start, deleteCount, item…)
+- removes elements from an array, replacing them with new items. The start parameter is the number of a position within the array. The deleteCount parameter is the number of elements to delete starting from that position. If there are additional parameters, those items will be inserted at the position.
+
+10. array.unshift(item…)
+- unshift is like the push method except that it shoves the items onto the front of the array instead of the end. It returns the array’s new length
+
+Function Methods:
+
+1. function.apply(thisArg, argArray)
+-The apply method invokes a function, passing in the object that will be bound to this and an optional array of arguments. The apply method is used in the apply invocation pattern (see Ch. 4).
+
+Number Methods:
+
+1. number.toExponential(fractionDigits)
+  -converts this number to a string in the exponential form. The optional fractingDigits param controls the number of decimal places. It should be between 0 and 20
+
+2. number.toFixed(fractionDigits)
+  -converts this number to a string in the decimal form. The optional fractionDigits param controls the number of decimal places. Should be between 0 and 20. Default is 0.
+
+3. number.toPrecision(precision)
+  - converts the number to a string in the decimal form. The optional precision param controls the number of digits of precision. It should be between 1 and 21.
+
+4. number.toString(radix)
+  - converts a number to a string. The optional radix param controls radix, or base. It should be between 2 and 36. The default radix is base 10. The radix param is commonly used with integers but it can be used on any number.
+  -can also be written as String(number)
+
+Object methods:
+
+1. object.hasOwnProperty(name)
+  -returns true if the object contains a property having the name. The prototype chain is not examined
+
+RegEx Methods:
+
+1. regexp.exec(string)
+  - if it successfully matches the regex and the string, it returns an array. The 0 element of the array will contain the substring that matched the regex. The 1 element is the text captured by group 1, the 2 element is the text captured by group 2, etc. 
+  -most powerful but slow
+  
+2. regexp.test(string)
+  -simplest and fastest regex method
+  -If the regex matches the string, it returns true. Otherwise it returns false.
+
+String Methods:
+
+1. string.charAt(pos)
+  The charAt method returns the character at position pos in the string. If pos is less than zero or greater than or equal to string.length, it returns an empty string.
+
+2. string.charCodeAt(pos)
+  -same as charAt except that instead of returning a string, it returns an integer representation of a code point of the character at position pos in that string.
+
+3. string.concat(string…)
+  -makes a new string by concatenating other strings together. It is rarely used because the + operator is more convenient
+
+4. string.indexOf(searchString, position)
+  -the indexOf method searches for a searchString within a string. If it is found, it returns the position of the first matched character; otherwise it returns -1. The optional position param causes the search to begin at a specified position in string.
+
+5. string.lastIndexOf(searchString, position)
+  -like indexOf, except that it searches from the end of the string instead of the front.
+
+6. string.localeCompare(that)
+  -this method compares two strings. if this string is less than that string, the result is negative. if they are equal the result is zero. this is similar to the convention for the array.sort comparison function. This is similar to the convention for array.sort
+
+7. string.match(regexp)
+  -matches a string and a regex expression. If there’s no g flag, then the result of calling string.match(regexp) is the same as calling regex.exec(string). However, if the regex has the g flag, then it produces an array of all the matches but excludes the capturing groups. 
+
+8. string.replace(searchValue, replaceValue)
+  -this does a search and replace operation on this string, producing a new string. The searchValue argument can be a string or a regular expression object. If it is a string, ONLY the first occurrence of searchValue is replaced.
+  -to replace all values, use a regex and a g flag.
+  -the replaceValue can be a string or a function. If it’s a function, it will be called for each match, and the string returned by the function will be used as the replacement text.
+
+9. string.search(regexp)
+  -the search method is like the indexOf method, except that it takes a regex object instead of a string. it returns the position of the first character of the first match, if there is one, or -1 if the search fails. 
+
+10. string.slice(start, end)
+  -the slice method makes a new string by copying a portion of another string. If the start or end param is negative, it adds string.length to it. the end param is optional, and it’s default is string.length. 
+  - the end param is one greater than the position of the last character. To get n characters starting at position p, use string.slice(p, p + n)
+
+11. string.split(separator, limit)
+  - split method creates an array of strings by splitting this string into pieces. The optional limit param can limit the number of pieces that will be split. The separator param can be a string or a regex.
+  - if the separator is an empty string, an array of single characters is produced
+
+12. string.substring(start, end)
+  -this is the same as the slice method except it doesn’t handle the adjustment for negative params. There is no reason to use this, use slice instead.
+
+13. string.toLocaleLowerCase()
+  - produces a new string that is made by converting this string to lowercase using the rules for the locale. This is primarily for the benefit of Turkish
+
+14. string.toLocaleUpperCase()
+  - produces a new string that is made by converting this string to uppercase using the rules of the locale
+
+15. string.toLowerCase()
+  -produces a new string by converting this string to lowercase.
+
+16. string.toUpperCase()
+  -produces new string by converting this string to uppercase
+
+17. String.fromCharCode(char…)
+  -produces a string from a series of numbers
