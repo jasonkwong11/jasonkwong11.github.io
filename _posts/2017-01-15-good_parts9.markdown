@@ -16,21 +16,24 @@ Here are the worst features of JS. Avoid these if possible. This post details co
 
 3. Semicolon Insertion
   -JS has a mechanism that tries to correct faulty programs by automatically inserting semicolons. Do not depend on this. It can mask more serious errors. 
-    //BAD:
-    return 
-    {
-      status: true
-    };
 
-    //GOOD:
-    return {
-      status: true
-    };
+BAD:
+
+      return 
+      {
+        status: true
+      };
+
+GOOD:
+
+      return {
+        status: true
+      };
 
 4. Reserved Words
   - Here are a list of reserved words in JS:
 
-    abstract boolean break byte case catch char class const continue debugger default delete do double else enum export extends false final finally float for function goto if implements import in instanceof int interface long native new null package private protected public return short static super switch synchronized this throw throws transient true try typeof var volatile void while with 
+      abstract boolean break byte case catch char class const continue debugger default delete do double else enum export extends false final finally float for function goto if implements import in instanceof int interface long native new null package private protected public return short static super switch synchronized this throw throws transient true try typeof var volatile void while with 
 
   -They cannot be used to name variable or parameters. When they’re used as keys in object literals, they must be quoted. They cannot be used with dot notation, so use the bracket notation instead.
 
@@ -38,10 +41,11 @@ Here are the worst features of JS. Avoid these if possible. This post details co
   -The typeof operator returns a string that identifies the type of its operand. So typeof 99 produces ‘number. Unfortunately typeof null returns ‘object’ instead of ‘null’. A better test for null is simply my_value === null.
   -A bigger problem is testing a value for objectness. typeof cannot distinguish between null and objects, but you can because null is falsey and all objects are truthey.
 
-    if (my_value && typeof my_value === ‘object’){
-      //my_value is an object or an array!
-    }
-  -Regex may be objects or functions
+      if (my_value && typeof my_value === ‘object’){
+        //my_value is an object or an array!
+      }
+
+-Regex may be objects or functions
 
 6. parseInt
   - parseInt is a function that converts a string to an integer. It stops when it sees a non digit, so parseInt(’16’) and parseInt(’16 tons’) produce the same result.
@@ -70,9 +74,11 @@ Here are the worst features of JS. Avoid these if possible. This post details co
 10. Phony Arrays:
   -JS doesn’t have real arrays. That isn’t all bad. JS’s arrays are easy to use, no need to give them a dimension, and they don’t generate out of bounds errors, but their performance can be considerably worse than real arrays.
   -Problem: the typeof operator doesn’t distinguish between arrays and objects. To determine if a value is an array, you should consult it’s constructor property:
-    if (my_value && typeof my_value === ‘object’ && my_value.constructor === Array ){
-      //my_value is an array!!
-    }
+
+
+      if (my_value && typeof my_value === ‘object’ && my_value.constructor === Array ){
+          //my_value is an array!!
+        }
 
   -^^ That test will give a false negative if the array was created in a different frame or window.
 
