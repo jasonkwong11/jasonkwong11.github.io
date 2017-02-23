@@ -1,0 +1,28 @@
+---
+layout: post
+title:  "Style and Good Parts Distilled"
+date:   2017-01-08 12:00:01-0400
+---
+
+Software is usually expected to be modified over the course of its life. Good programs have a structure that anticipates —but is not overly burdened by the possible modifications that will be required in the future. 
+
+We should code JS with strict discipline because of its loose typing and excessive error tolerance. We should try to avoid features that are useful but occasionally hazardous in order to avoid a large class of potential errors. 
+
+Declare variables at the beginning of each function. (Because JS has function scope not block scope.)
+
+Don’t allow switch cases to fall through to the next case. 
+
+Use a single global variable to contain the application or library. 
+
+Every object has it’s own namespace, so use objects to organize code. 
+
+Use of closure provides further information hiding, increasing the strength of my modules.
+
+Simplified JS is just the good stuff, including:
+
+Functions as first class objects: functions are lambdas with lexical scoping.
+
+Dynamic objects with prototypal inheritance: objects are class-free. We can add a new member to any object by ordinary assignment. An object can inherit members from another object.
+
+Object literals and array literals: Very convenient notation for creating new objects and arrays. JS literals were the inspiration for the JSON data interchange format.
+
