@@ -1,0 +1,113 @@
+---
+layout: post
+title:  "Common JS Mistakes and Pitfalls"
+date:   2017-01-15 12:00:01-0400
+---
+
+
+Here are the worst features of JS. Avoid these if possible. This post details common JS Pitfalls and how to work around them.
+
+1. Global Variables
+  - This is the worst of JS’s bad features. If subprograms happen to share the same name as global variables, they will interfere with each other and be difficult to diagnose.
+  - The problem is not that JS allows them, but it requires them. All compilation units are loaded into a common global object.
+
+2. Scope
+  - JS uses block syntax, but doesn’t provide block scope. A variable declared in a block is visible everywhere in the function containing the block. It is best to declare al variables at the top of each function.
+
+3. Semicolon Insertion
+  -JS has a mechanism that tries to correct faulty programs by automatically inserting semicolons. Do not depend on this. It can mask more serious errors. 
+    //BAD:
+    return 
+    {
+      status: true
+    };
+
+    //GOOD:
+    return {
+      status: true
+    };
+
+4. Reserved Words
+  - Here are a list of reserved words in JS:
+
+    abstract boolean break byte case catch char class const continue debugger default delete do double else enum export extends false final finally float for function goto if implements import in instanceof int interface long native new null package private protected public return short static super switch synchronized this throw throws transient true try typeof var volatile void while with 
+
+  -They cannot be used to name variable or parameters. When they’re used as keys in object literals, they must be quoted. They cannot be used with dot notation, so use the bracket notation instead.
+
+5. typeof
+  -The typeof operator returns a string that identifies the type of its operand. So typeof 99 produces ‘number. Unfortunately typeof null returns ‘object’ instead of ‘null’. A better test for null is simply my_value === null.
+  -A bigger problem is testing a value for objectness. typeof cannot distinguish between null and objects, but you can because null is falsey and all objects are truthey.
+
+    if (my_value && typeof my_value === ‘object’){
+      //my_value is an object or an array!
+    }
+  -Regex may be objects or functions
+
+6. parseInt
+  - parseInt is a function that converts a string to an integer. It stops when it sees a non digit, so parseInt(’16’) and parseInt(’16 tons’) produce the same result.
+  - If the first character of the string is 0, then the string is evaluated in base 8 instead of base 10. In base 8, 8 and 9 are not digits, so parseInt(“08”) and parseInt(“09”) produce 0 as their result. This causes problems in programs that parse dates and times. Fortunately, parseInt can take a radix parameter, so that parseInt(“08”, 10) produces 8. You should always provide the radix parameter.
+
+7. + (plus operator)
+  - The + operator can add or concatenate. Which one it does depends on the types of the parameters. 
+  - If either operand is an empty string, it produces the other operand converted to a string.
+  - If both operands are numbers, it produces the sum. Otherwise it converts both operands to strings and concatenates them.
+  -This is a common source of bugs if you intend to + to add, make sure both operands are numbers
+
+8. Floating Point:
+  - Binary floating point numbers are bad at handling decimal fractions, so 0.1 + 0.2 is not equal to 0.3. This is the most frequently reported bug in JS.
+  - Fortunately, integer arithmetic in floating point is exact, so decimal representation errors can be avoided by scaling.
+  - For example, dollar values can be converted to whole cents values by multiplying them to 100. The cents can then be accurately added.
+
+9. NaN
+  -the value NaN is a special quantity… it stands for not a number even though:
+    typeof NaN === ‘number’ // true
+
+  -this value can be produced by attempting to convert a string to a number when the string isn’t a number
+  -if NaN is an operand in an arithmetic operation, then NaN will be the result. So if you have a chain of formulas that produce NaN as a result, at least one of the inputs will be NaN, or NaN was generated somewhere
+  -JS provides an isNaN function that can distinguish between numbers and NaN
+  -the isFinite function is the best way to determine whether a value can be used as a number because it rejects NaN and Infinity… unfortunately isFinite will attempt to convert its operand to a number, so its not a good test if a value is not actually a number.
+
+10. Phony Arrays:
+  -JS doesn’t have real arrays. That isn’t all bad. JS’s arrays are easy to use, no need to give them a dimension, and they don’t generate out of bounds errors, but their performance can be considerably worse than real arrays.
+  -Problem: the typeof operator doesn’t distinguish between arrays and objects. To determine if a value is an array, you should consult it’s constructor property:
+    if (my_value && typeof my_value === ‘object’ && my_value.constructor === Array ){
+      //my_value is an array!!
+    }
+
+  -^^ That test will give a false negative if the array was created in a different frame or window.
+
+11. Falsey Values:
+  -List of falsey values in JS: 
+    0(zero), NaN, ‘’(empty string), false, null, undefined 
+  -These values are all falsey but not interchangeable. 
+
+12. hasOwnProperty:
+  -hasOwnProperty can be used as a filter around the problem with the for in statement. Unfortunately, hasOwnProperty is a method, not an operator, so in any object it could be replaced with a different function or even a value that is not a function. 
+
+13. Object
+  -JS’s objects are never truly empty because they can pick up members from the prototype chain. Sometimes that matters. 
+  -We can avoid problems like this the same way we avoid problems with for in: by testing for membership with the hasOwnProperty method or by looking for specific types.
+
+For example, suppose you are writing a program that counts the number of occurrences of each word in a text. 
+  -Here’s a word counter in JS:
+
+      var i;
+      var word;
+      var text =
+             "This oracle of comfort has so pleased me, " +
+             "That when I am in heaven I shall desire " +
+             "To see what this child does, " +
+             "and praise my Constructor.";
+      var words = text.toLowerCase().split(/[\s,.]+/); var count = {}; 
+      for (i = 0; i < words.length; i += 1) { 
+         word = words[i];
+         if (count[word]) {
+             count[word] += 1;
+         } else {
+             count[word] = 1;
+         }
+} 
+
+
+
+===> Instead use if(typeof count[word] === ‘number’)
