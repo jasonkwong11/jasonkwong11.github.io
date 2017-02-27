@@ -1,0 +1,28 @@
+---
+layout: post
+title:  "All About JSON"
+date:   2017-01-29 12:00:01-0400
+---
+
+This is the last chapter in the my notes series on Douglas Crockford's "Javascript: the Good Parts". What a classic! Buy a copy today.
+
+
+JSON is a lightweight data interchange format. It’s based on JS’s object literal notation, one of JS’s best parts. It is language independent. It can be used to exchange data between programs.
+
+JSON has six kids of values: objects, arrays, strings, numbers, booleans and null. Whitespace can be inserted before or after any value.
+
+JSON is an object container of name value pairs. A name can be any string. A value can be any JSON value, including arrays and objects. JSON objects can be nested to any depth, but generally it is most effective to keep them relatively flat.  You can map JSON objects easily to object, struct, record, dictionary, hash table, property list, or associative array.
+
+JSON strings are wrapped in double quotes. The \ character is used for escapement. JSON allows the / to be escaped so that JSON can be embedded in HTML <script> tags.
+
+HTML does not allow the sequence '</' except to start the </script> tag. JSON allows <\/, which produced the same result but does not confuse HTML.
+
+JSON numbers are like JS numbers. A leading zero is not allowed on integers because some languages use that to indicate the octal.
+
+Using JSON Securely:
+
+A JSON text can be turned into a useful data structure with the eval function:
+  
+    var myData = eval(‘(‘ + myJSONText + ‘)’);
+
+EXCEPT this has a security flaw. Instead use JSON.parse. JSON.parse will throw an exception if the text contains anything dangerous. It defends against server incompetence.
