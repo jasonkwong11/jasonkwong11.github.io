@@ -4,103 +4,120 @@ title:  "Bad Parts of JS...Avoid These"
 date:   2017-01-22 12:00:01-0400
 ---
 
+
 This post focuses on the bad parts of JS that are easily avoided.
 
 1. == (Double equals)
-  - Never use: == or != instead use === or !== 
-  - === and !=== accounts for both their type and value
+
+Never use: == or != instead use === or !== 
+
+=== and !=== accounts for both their type and value
   
 2. with Statement
-  -JS has a with statement intended to provide a shorthand when accessing the properties of an object. Unfortunately, its results can sometimes be unpredictable so it should be avoided.
-    
-      with (obj) {
-        a = b;
-      }
 
-      //does the same thing as this:
-
-      if (obj.a === undefined) {
-        a = obj.b === undefined ? b : obj.b;
-      } else {
-        obj.a = obj.b === undefined ? b : obj.b;
-      }
+JS has a with statement intended to provide a shorthand when accessing the properties of an object. Unfortunately, its results can sometimes be unpredictable so it should be avoided.
     
-  - it is not possible to tell from reading the program which of those statements you will get.
+    with (obj) {
+      a = b;
+    }
+
+    //does the same thing as this:
+
+    if (obj.a === undefined) {
+      a = obj.b === undefined ? b : obj.b;
+    } else {
+      obj.a = obj.b === undefined ? b : obj.b;
+    }
+    
+it is not possible to tell from reading the program which of those statements you will get.
 
 3. eval 
-  -the eval function passes a string to the JS compiler and executes the result.
-  -This is the single most misused feature of JS. For example, if you know about the dot notation, but are ignorant of the subscript notation, you might write: 
+
+the eval function passes a string to the JS compiler and executes the result.
+This is the single most misused feature of JS. For example, if you know about the dot notation, but are ignorant of the subscript notation, you might write: 
     
-      eval(“myValue = myObject.” + myKey + “;”);
+    eval(“myValue = myObject.” + myKey + “;”);
 
 instead of 
 
-      myValue = myObject[myKey];
+    myValue = myObject[myKey];
 
-  - the eval form is much harder to read and much slower because it needs to run the compiler, AND it frustrates JSLint
-  -this function compromises the security of your application because it grants too much authority to the eval’d text. 
-  -the Function constructor is another form of eval, and should also be avoided.
-  -the browser provides setTimeout and setInterval functions that can take string arguments or function arguments.
+the eval form is much harder to read and much slower because it needs to run the compiler, AND it frustrates JSLint
+
+this function compromises the security of your application because it grants too much authority to the eval’d text. 
+
+the Function constructor is another form of eval, and should also be avoided.
+
+the browser provides setTimeout and setInterval functions that can take string arguments or function arguments.
 
 4. continue statement: jumps to the top of the loop. never use this.
 
 5. switch Fall Through
-  - Don’t use intentional fall throughs in a case statement. They will affect the JS Lint. 
+
+Don’t use intentional fall throughs in a case statement. They will affect the JS Lint. 
 
 6. Blockless Statements:
-  - An IF, WHILE, DO, or FOR statement can take a block or a single statement. The single statement only saves you from typing the {}. But it makes code harder to read.
+
+An IF, WHILE, DO, or FOR statement can take a block or a single statement. The single statement only saves you from typing the {}. But it makes code harder to read.
 
 7. ++- - 
-  -The increment and decrement operators make it possible to write an extremely terse style. Con: code becomes too tight, tricky, and cryptic.
+
+The increment and decrement operators make it possible to write an extremely terse style. Con: code becomes too tight, tricky, and cryptic.
 
 8. Bitwise Operators:
-  JS’s bitwise operators:
+JS’s bitwise operators:
   
-  & … and
-  | … or
-  ^ … xor
-  ~ … not 
-  >> … signed right shift
-  >>> … unsigned right shift
-  << … left shift
+& ... and
+| ... or
+^ ... xor
+~ ... not 
+>> ... signed right shift
+>>> ... unsigned right shift
+<< ... left shift
    
 JS doesn’t have integers. It only has double precision floating-point numbers. So the bitwise operators convert their number operands into integers, do their business, and then convert them back.
-  - In most languages, this is very close to the hardware and very fast. In JS, they are very far from hardware and very slow. JS is rarely used for doing bit manipulation.
-  - As a result, in JS programs, it is more likely that & is a mistyped && operator.
+
+In most languages, this is very close to the hardware and very fast. In JS, they are very far from hardware and very slow. JS is rarely used for doing bit manipulation.
+
+As a result, in JS programs, it is more likely that & is a mistyped && operator.
 
 9. The function Statement Versus the function Expression:
-  - JS has a function statement as well as a function expression. This is confusing because they look exactly the same. A function statement is shorthand for a var statement with a function value. 
 
-  The statement:
+JS has a function statement as well as a function expression. This is confusing because they look exactly the same. A function statement is shorthand for a var statement with a function value. 
+
+The statement:
  
-      function foo( ){ }
+    function foo( ){ }
 
-  means about the same thing as:
+means about the same thing as:
 
-      var foo = function foo ( ) { };
+    var foo = function foo ( ) { };
 
-  **To use the language well, it is important to understand that functions are values. 
-  ** Function statements are subject to hoisting. This means that regardless of where a function is placed, it is moved to the top of the scope in which it is defined.
-  ** This relaxes the requirement that functions should be declared before used, which can lead to sloppiness.
-  ** Hoisting prohibits the use of function statements in if statements. It turns out that most browsers  allow function statements in if statements but they vary in how that should be interpreted.
+**To use the language well, it is important to understand that functions are values. 
+** Function statements are subject to hoisting. This means that regardless of where a function is placed, it is moved to the top of the scope in which it is defined.
+** This relaxes the requirement that functions should be declared before used, which can lead to sloppiness.
+** Hoisting prohibits the use of function statements in if statements. It turns out that most browsers  allow function statements in if statements but they vary in how that should be interpreted.
   
-  ** The first thing in a statement cannot be a function expression because the official grammar assumes that a statement that starts with the word function is a function statement. The workaround is to wrap the function expression in parentheses:
+** The first thing in a statement cannot be a function expression because the official grammar assumes that a statement that starts with the word function is a function statement. The workaround is to wrap the function expression in parentheses:
 
-      (function ( ) {
-        var hidden_variable;
-        // This function can have some impact on 
-        // the environment, but introduces no new
-        // global variables.
-      } )( );
+    (function ( ) {
+      var hidden_variable;
+      // This function can have some impact on 
+      // the environment, but introduces no new
+      // global variables.
+    } )( );
 
 10. Typed Wrappers:
-  - JS has a set of typed wrappers. For example: 
+
+JS has a set of typed wrappers. For example: 
+    
     new Boolean(false)
-    // produces an object that has a valueOf method that returns the wrapped value. This turns out to be completely unnecessary and occasionally confusing. Don’t use new Boolean or new Number or new String or new Object, new Array. Use { } and [ ] instead.
+
+...produces an object that has a valueOf method that returns the wrapped value. This turns out to be completely unnecessary and occasionally confusing. Don’t use new Boolean or new Number or new String or new Object, new Array. Use { } and [ ] instead.
 
 11. new
-  - JS’s new operator creates a new object that inherits from the operand’s prototype member, and then calls the operand, binding the new object to this… This gives the operand (should be a constructor function) a chance to customize the new object before it is returned to the requestor.
-  - shouldn’t use new
+
+JS’s new operator creates a new object that inherits from the operand’s prototype member, and then calls the operand, binding the new object to this… This gives the operand (should be a constructor function) a chance to customize the new object before it is returned to the requestor...shouldn’t use new
 
 12. void
-  - In JS, void is a type that has no values. In JS, void is an operator that takes an operand and returns undefined. This is not useful and confusing. Avoid void.
+In JS, void is a type that has no values. In JS, void is an operator that takes an operand and returns undefined. This is not useful and confusing. Avoid void.
