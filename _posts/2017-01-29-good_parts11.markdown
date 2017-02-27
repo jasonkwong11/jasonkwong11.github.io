@@ -26,3 +26,49 @@ A JSON text can be turned into a useful data structure with the eval function:
     var myData = eval(‘(‘ + myJSONText + ‘)’);
 
 EXCEPT this has a security flaw. Instead use JSON.parse. JSON.parse will throw an exception if the text contains anything dangerous. It defends against server incompetence.
+
+
+==== ES6 Cheat Sheet from John Resig ====
+
+Template literals embed expressions into strings: `${ninja}`
+
+Block-scoped variables:
+
+  - Use the new LET keyword to create block-level variables: 
+    let ninja = “Yoshi”
+
+  - Use the new CONST keyword to create block-level constant variables whose value can’t be reassigned to a completely new value: 
+    const ninja = “Yoshi”
+
+Function parameters:
+  
+  - Rest parameters create an array from arguments that weren’t matched to parameters: 
+    
+    function multiMax (first, … remaining) {
+      /* … */
+    }
+
+    multiMax(2, 3, 4, 5);
+    //first: 2; remaining: [3, 4, 5]
+
+  - Default parameters specify default parameter values that are used if no value is supplied during invocation:
+    
+    function do (ninja, action = “skulk”) {
+      return ninja + “ “ + action;
+    }
+
+    do(“Fuma”);
+    // “Fuma skulk”
+
+Spread Operators: expand an expression where multiple items are needed: [… items, 3, 4, 5]
+
+Arrow functions: let us create functions with less syntactic clutter. They don’t have their THIS parameter. Instead, they inherit it from the context in which they were created: 
+
+Generators: generate a sequence of values on a per-request basis. Once a value is generated, the generator suspends its execution without blocking. Use yield to generate values:
+
+    function *IdGenerator(){
+      let id = 0;
+      while(true){ yield ++id; }
+    }
+
+Promises are placeholders for the result of a computation. A promise is a guarantee that eventually we’ll know the result of some computation. The promise can either succeed or fail, and once it has done so, there will be no more changes
