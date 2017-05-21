@@ -1,0 +1,128 @@
+---
+layout: post
+title:  "JS Ninja: Building the Page At RunTime"
+date:   2017-02-12 12:00:01-0400
+---
+We first have to understand the complete web application lifecycle. And how our JS code fits into this lifecycle.
+
+Start at how the page is built by processing HTML code. Then at the moment the page is requested, through various interactions performed by the user, all the way until the page is closed down.
+
+The Life Cycle Overview: 
+
+1. Starts with user typing URL into the browser’s address bar or clicking a link.
+
+2. Generates a request and sends it to the server.
+
+3. Server processes the request: 
+- Performs actions or gets a resource;
+- sends response to client.
+
+4. Processes HTML CSS, and JS and builds resulting page.
+Before the web app can be interacted with or even displayed, the page must be built from the information in the response received from the server (usually HTML, CSS, and JS code). This is done in two distinct steps:
+
+1. Parsing the HTML and building the DOM … this is performed when the browser is processing HTML nodes
+a. The browser receives the HTML code, which is used as a base on top of which the browser builds the page’s UI. 
+b. The browser does this by parsing the HTML code, one HTML element at a time, and building a DOM, a structured representation of the HTML page in which every HTML element is represented as a node.
+c. Note: although the HTML and the DOM are closely linked, with the DOM being constructed from HTML, they aren’t one and the same.
+d. Erroneous HTML code (p tag within a head tag). The browser will silently fix it by constructing the correct DOM in which the p tag is placed in the body element, where it should be.
+
+2. Executing the JS code … is performed whenever a special type of HTML element (the script element) is encountered
+a. when this happens, the browser pause the DOM construction from HTML code and starts executing the JS code.
+b. Because the primary purpose of JS code is to provide dynamicity to the page, the browser provides an API through a global object that can be used by the JS engine to interact with and modify the page.		
+c. Global Objects in JS: the primary global object that the browser exposes to the JS engine is the WINDOW OBJECT, which represents the window in which a page is contained 
+	…the window object is the object in through which all other global objects, global variables, and browser APIs are accessible.
+	… one of the most important properties of the global window object is the document, which represents the DOM of the current page.
+	… by using the document object, the JS code can alter the DOM of the page to any degree, by modifying or removing existing elements or creating and inserting new ones.
+	
+- During the page building phase, the browser can switch between these two steps as many times as necessary
+
+Different Types of JS Code: We broadly differentiate between the two different types of JS code: global code and function code. Here are the differences between these two types of code:
+- Function code: is contained in a function. 
+
+	<script>
+		function addMessage(element, message){
+			var messageElement = document.createElement(“li”);
+			messageElement.textContent = message;
+			element.appendChild(messageElement);
+		}
+		// Function code above^^
+
+		// Global code below:
+		var first = document.getElementById(“first”);
+		addMessage(first, “Page loading”);	
+	</script>
+
+These two code types also differ in their execution: 
+1. Global code is executed automatically by the Javascript engine in a straightforward fashion, line by line as its encountered. 
+2. Function code has to be called by something else. Either by global code or by some other function, or by the browser.
+
+Executing JS code in the Page-Building Phase:
+-The DOM creation process is paused to execute JS, then resumes after JS is done.
+-Note: the global state of the JS application persists in the meantime. All user-defined global variables created during the execution of the JS code in one script element are normally accessible to JS code in other script elements. This happens because the global window object, which stores all global JS variables is alive and accessible during the entire lifecycle of the page.
+
+-The two steps are repeated until the browser runs out of HTML elements to process and JS code to execute. The browser then moves to the second part of the web app’s lifecycle: event handling.
+
+5. Monitors event queue, processing any events one at a time. 
+
+Event Handling:
+JS code executed during the page-building phase, can register event listeners (or handlers): functions that are executed by the browser when an event occurs. With these event handlers, we provide interactivity to our applications.
+
+Event-handling overview:
+The browser execution environment is, at its core, based on the idea that only a single piece of code can be executed at once: the single-threaded execution model.
+Whenever an event occurs, the browser should execute the associated event handler function. But there’s no guarantee that we have extremely patient users who will wait an appropriate amount of time before triggering another event. For this reason, the browser needs a way to track the events that have occurred but have yet to be processed. To do this, the browser uses an event queue:
+
+Event Queue:
+1. Browser checks for event at head of queue
+2. If there are no events, the browser keeps checking
+3. If there’s an event at the head of the event queue, the browser takes it and executes the associated handler (if one exists). During this execution, the rest of the events patiently wait in the event queue for their turn to be processed.
+
+Because only one event is handled at a time, we have to be extra careful about the amount of time needed for handling events; writing event handlers that take a lot of time to execute leads to unresponsive we apps. 
+
+*Note: the browser mechanism that puts events onto the queue is external to the page-building and event-handling phases. The processing that’s necessary to determine when events have occurred and that pushes them onto the event queue doesn’t participate in the thread that’s handling the events.
+
+Events are Asynchronous:
+
+Events, occur unpredictably: users may press keys or click in some particular order. We say that the handling of events, and therefore the invocation of their handling functions, is asynchronous.
+	
+The following types of events can occur:
+Browser events, such as when a page is finished loading or when it’s to be unloaded
+Network events, such as responses coming from the server (Ajax events, server-side events)
+User events, such as mouse clicks, mouse moves, and key presses
+Timer events, such as when a timeout expires or an interval fires
+
+The vast majority of code executes as a result of such events! The concept is so central to web apps, you’ll see it again and again: Code is set up in advance in order to be executed at a later time. Except for global code, the vast majority of code we place on a page will execute as a result of some event.
+
+Before events can be handled, our code has to notify the browser that we’re interested in handling particular events. Here’s how to register event handlers:
+
+Registering Event Handlers:
+
+Event handlers are functions that we want executed whenever a particular event occurs. In order for this to happen, we have to notify the browser that we’re interested in an event. This is called event-handler registration. In client side web apps, there are two ways to register events: 
+1. By assigning functions to special properties
+2. By using the built-in addEventListener method
+
+For example, writing the following code assigns a function to the special ONLOAD property of the window object:
+
+  window.onload = function(){};
+
+^^^ This code registers the load event. Similarly if we want to register a handler for the click event on the document’s body, we can write something along these lines:
+
+  document.body.onclick = function(){};
+
+Assigning functions to special properties is an easy and straightforward way of registering event handlers, and you’ve probably run into it already.
+
+**** But we don’t recommend you register event handlers this way, because doing so comes with a drawback: It’s only possible to register one function handler for a particular event. This means it’s easy to overwrite previous event-handler functions, which can be frustrating.
+
+HERE’S THE ALTERNATIVE: The addEventListener method enables us to register as many event-handler functions as we need.
+
+		document.body.addEventListnener(“mousemove”, function() {
+			var second = document.getElementById(“second”)’
+			addMessage(second, “Event: mousemove”);
+		});
+
+^^ USE THIS INSTEAD
+Handling Events: when an event occurs, the browser calls the associated event handler. Due to the single-threaded execution model, only a single event handler can be executed at once.
+
+6. Interacts with page elements (Event handling occurs).
+
+7. Closes web app. ( App lifecycle ends)
+
