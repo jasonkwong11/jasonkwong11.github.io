@@ -1,0 +1,21 @@
+---
+layout: post
+title:  "Javascript Ninja: Best Practices"
+date:   2017-02-5 12:00:01-0400
+---
+
+John Resig is best known for inventing jQuery and the website theCHIVE.com. He wrote a book called Secrets of the Javascript Ninja which is incredible. Resig provides an in-depth understanding of how Javascript operates that is crucial for any JS developer. He explains what's going on under the hood in a succint and clear way. Notably, the second edition has great explanations on ES6 features.
+
+These upcoming series of posts give you my notes on this incredible book. Make sure to pick up a copy on Amazon!
+
+JS Browser infrastructure: DOM, Events, Timers
+-DOM: structured representation of the UI of a client-side web application
+-Events: A huge majority of JS apps are event-driven applications, meaning that most of the code is executed in the context of a response to a particular event (e.g.: network events, timers, and user-generated events: licks, mouse moves, keyboard presses, etc.)
+-Browser API: the browser offers an API that allows information about devices, store data locally, or communicate with remote servers.
+	
+Best Practices can be broken down into: debugging skills, testing, performance analysis
+
+1. Debugging:
+	-Use firebug, chrome devtools 
+2. Testing
+3. Performance Analysis: output the time elapsed since the timer was started.
