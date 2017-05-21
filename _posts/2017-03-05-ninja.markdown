@@ -1,0 +1,302 @@
+---
+layout: post
+title:  "JS Ninja: Function Invocation: Part One"
+date:   2017-03-05 12:00:01-0400
+---
+The THIS parameter represents the function context, the object on which our function is invoked, whereas the arguments parameter represents all arguments that are passed in through a function call.
+… Both are vital in JS code.
+...the THIS param is one of the fundamental ingredients of OO JS and at the arguments param allows us to be creative with the arguments that are accepted by our functions.
+*** The way in which we invoke a function has a great influence on how the implicit function parameters are determined.
+
+Using Implicit Function Parameters:
+
+Remember that…
+Function Parameters: variables listed as part of a function definition.
+Function Arguments: values passed to the function when we invoke it.
+
+But, in addition to the params that we’ve explicitly stated in the function definition, function invocations are usually passed two implicit parameters: ARGUMENTS and THIS.	
+… implicit means: these parameters aren’t explicitly listed in the function signature, but are silently passed to the function and accessible within the function. They can be referenced within the function just like any other explicitly named parameter.
+
+The Arguments Parameter: a collection of all arguments passed to a function. 
+… it allows us to access all function arguments, regardless of whether the matching parameter is explicitly defined.
+… allows us to implement function overloading, a feature JS doesn’t natively support, and variadic functions that accept a variable number of arguments
+
+** With rest parameters, the need for the arguments parameter has been greatly reduced.
+** Still it’s important to understand who the arguments param works because it will be found in legacy code.
+
+The arguments object has a property named length that indicates the exact number of arguments. The individual argument values can be obtained by using array indexing notation; for example, arguments[2] would fetch the third parameter. 
+
+The arguments parameter can also be used to access each individual argument through array notation. It’s important to note that this also includes the excess arguments that aren’t associated with any function parameters.
+
+*** REMEMBER THAT ARGUMENTS IS NOT AN ARRAY: it has a length parameter, and it’s entries can be fetched using array notation. But it’s NOT A JS ARRAY. If you try to use array methods on arguments (like sort), IT WONT WORK. It’s an array like construct.
+
+Here’s a function that allows us to calculate the sum of an arbitrary number of arguments:
+
+        function sum( ) {
+          var sum = 0;
+          for (var i = 0; i < arguments.length; i++){
+            sum += arguments[i];
+          }
+          return sum;
+        }
+
+^^ Doesn’t list any parameters, but we can still access the function arguments through the arguments object. We iterate through all the arguments and calculate their sum. **This is the power of arguments object.
+
+NOTE: When you use the rest parameter instead of the arguments parameter. The rest parameter is a real array, which means that we can use all our favorite array methods on it. This gives it a certain advantage over the arguments object.
+
+COMMON GOTCHAS OF THE ARGUMENTS OBJECT:
+
+Arguments Object as an Alias to Function Parameter:
+
+-The arguments parameter has one curious feature: It aliases function parameters. If we set a new value to for example arguments[0], the value of the first parameter will also be changed.
+
+You can see how the arguments object is an alias for the function params. Because the arguments object is an alias for the function params, if we change the arguments object, the change is also reflected in the matching function parameter.
+
+        arguments[0] = ‘ninja’;
+
+The same is true in the other direction. If we change a parameter, the change can be observed in both the parameter and the arguments object:
+
+        person = ‘gardener’;
+
+        //arguments[0] === ‘gardener’;
+
+Avoiding Aliases: The concept of aliasing function parameters through the arguments object can be confusing, so JS provides a way to opt out using strict mode. 
+
+Strict mode changes the semantics of our program in a way that the person parameter and the first argument start with the same value:
+      
+        assert(person === ‘gardener’, ‘The person is a gardener’);
+        assert(arguments[0] === ‘gardener’, ‘The first argument is a gardener’);
+	
+In strict mode, if we change the value of the first argument, arguments[0] = ‘ninja’, the first argument is changed, but the person parameter isn’t:
+
+        assert(arguments[0] === ‘ninja’, ‘The first argument is now a ninja’);
+        assert(person === ‘gardener’, ‘The person is still a gardener’);
+
+The THIS parameter: introducing the function context — 
+
+When a function is invoked, in addition to the parameters that represent the explicit arguments provided in the function call, an implicit parameter named this is passed to the function.
+
+The this param, refers to an object that’s associated with the function invocation.
+The function context isn’t the same as an OO ruby THIS
+In JS, invoking a function as a method is only one way that a function can be invoked. What THIS points to in JS isn’t defined only by how and where the function is defined, **it is heavily influenced by how the function is invoked **..
+
+** HOW FUNCTIONS CAN BE INVOKED **
+
+The manner in which a function is invoked has a huge impact on how the code within it operates. Primarily in how the THIS parameter, the function context, is established. The difference is much more important than it might seem at first.
+
+We can invoke a function in 4 ways, each with its nuances:
+
+1. As a function — skulk(), in which the function is invoked in a straightforward manner
+2. As a method — ninja.skulk(), which ties the invocation to an object, enabling OO programming
+3. As a constructor — new Ninja(), in which a new object is brought into being
+4. Via the function’s apply or call methods —skulk.call(ninja) or skulk.apply(ninja)
+
+Here are some examples:
+        function skulk(name) {}
+        function Ninja(name) {}
+        //^^ define these functions
+
+        skulk(‘Hattori’);
+        (function(who) {return who;})(‘Hattori’);  
+        // ^^ Invoked as a function
+
+        var ninja = {
+          skulk: function(){}
+        };
+        // ^^ Invoked as a method of ninja
+
+        ninja = new Ninja(‘Hattori’);
+        // ^^ Invoked as a constructor
+
+        skulk.call(ninja, ‘Hattori’);
+        //^^ Invoked via the call method
+
+        skulk.apply(ninja, [‘Hattori’]);
+        // ^^ Invoked via the apply method
+
+For all but the call and apply approaches, the function invocation operator is a set of parentheses following any expression that evaluates to a function reference.
+
+Invocation As A Function: We say that a function is invoked as a function to distinguish it from other invocation methods: methods, constructors, and apply/call.
+	
+This type of invocation occurs when a function is invoked using the () operator, and the expression to which the () operator is applied doesn’t reference the function as a property of an object.
+        function ninja () {};
+        ninja(); 
+        //^^ function declaration invoked as a function
+
+        var samurai = function() {};
+        samurai();
+        //^^ function expression invoked as a function
+
+        (function(){})()
+        //^^ Immediately invoked function expression, IFFE, invoked as a function.	When invoked in this manner, the function context (the value of the this keyword can be two things: in construct mode, it will be the global context (the window object), whereas in strict mode, it will be undefined.)
+
+A non-strict function has a window as the function context.
+
+A strict function, has an undefined context.
+
+**When you invoke a function as a function, it hasn’t specified an object on which the function should be invoked. So it makes more sense that the THIS keyword should be set to undefined (as in strict mode)… as opposed to the global window object (as in non-strict mode)
+	=> In general, strict mode fixes a lot of these small JS oddities
+
+Invocation as a Method: When a function is assigned to a property of an object and the invocation occurs by referencing the function using that property, then the function is invoked as a method of that object.
+
+      Example:
+        var ninja = {};
+        ninja.skulk = function () {};
+        ninja.skulk();
+
+^^ The function is called a method in this case. Just as in OO, the object to which a method belongs is available within the body of the method as this. The same thing happens in JS. 
+
+***When we invoke a function as a method of an object, that object becomes the function context and is available within the function via the THIS parameter. This is the primary means by which JS allows OO code to be written. Constructors are another.
+
+Example: 
+
+      var ninja1 = {
+        getMyThis: whatsMyContext
+      };
+
+      assert( ninja1.getMyThis() === ninja1,
+        “Working with 1st ninja”);
+
+Like we said above, when we invoke the function via a method reference, we expect the function context to be the method’s object (in this case, ninja1)
+
+**Invoking functions as methods is crucial to writing JS in an OO manner, Doing so enables you to use this within any method to reference the method’s “owning” object — a fundamental concept in OO programming.
+
+Even though the same function — whatsMyContext — is used throughout the example, the function context returned by this changes depending on how whatsMyContext is invoked. The exact same function can be shared by two objects, yet when it’s executed, the function has access to, and can perform operations on, the object through which the method was invoked.
+** We don’t need to create separate copies of a function to perform the exact same processing on different objects. This is a tenet of OO programming.
+
+Limitations:
+	1. When we create two ninja objects, we’re able to share the same function to be used as a method in each, but we have to use a bit of repeated code to set up the separate objects and their methods. (JS has ways around this, see ch 7)
+
+Invocation As a Constructor (CONSTRUCTOR FUNCTIONS):
+	There’s nothing special about a function that’s going to be used as a constructor. Constructor functions are declared just like any other function, and we can easily use function declarations and function expressions for constructing new objects. The only exception is the arrow function, which works differently. But in any case, the main difference is how the function is invoked.
+
+	To invoke the function as a constructor: precede the function invocation with the keyword: new.
+
+	*** DON’T CONFUSE FUNCTION CONSTRUCTORS WITH CONSTRUCTOR FUNCTIONS. 
+	1. A function constructor enables us to create functions from dynamically created strings. 
+	
+		Example: new Function(‘a’, ‘b’, ‘return a + b’) creates a new function with two params that returns their sum.
+	
+	2. A constructor function, the topic of this section, are functions we use to create and initialize object instances.
+
+THE SUPERPOWERS OF CONSTRUCTORS (constructor functions)
+
+Example:
+	      new whatsMyContext();
+
+	^^ Even though we can invoke whatsMyContext as a constructor, that function isn’t a useful constructor.
+
+Invoking a function as a constructor is a powerful feature of JS that we’ll explore in the following listing, 4.7:
+
+      function Ninja(){
+        this.skulk = function (){
+          return this;
+        };
+      }
+
+// ^^ The above is a constructor that creates a skulk property on whatever object is the function context. The method once again returns the function context so that we can test it externally.
+	
+      var ninja1 = new Ninja();
+      var ninja2 = new Ninja();
+
+//^^ Create two objects by invoking the constructor with new. The newly created objects are referenced by ninja1 and ninja2.
+
+        assert(ninja1.skulk() === ninja1,
+          “The 1st ninja is skulking”);
+
+        assert(ninja2.skulk() === ninja2,
+          “The 2nd ninja is skulking”)	;
+
+          //Tests the skulk method of the constructed objects. Each should return its own constructed object.
+
+In general, when a constructor is invoked, a couple of special actions take place:
+
+1. A new empty object is created.
+2. The object is passed to the constructor as the this parameter, and thus becomes the constructor’s function context.
+3. Add new properties to the new object: here, the skulk method.
+4. The newly created object is returned as the new operator’s value (with an exception that we’ll get to in short order.)
+
+The last two points points touch on why whatsMyContext in new whatsMyContext makes for a lousy constructor. The purpose of a constructor is to cause a new object to be created, set it up, and to return it as the constructor value. Anything that interferes with that intent isn’t appropriate for constructors.
+
+Here’s an example of an appropriate constructor, Ninja:
+
+        function Ninja(){
+          this.skulk = function () {
+            return this;
+          };
+        }
+
+The skulk method performs the same operation as whatsMyContext in the previous sections, returning the function context so that we can test it externally. With the constructor defined, we create two Ninja objects by invoking the constructor twice. Note hat the returned values from the invocation are stored in variables that become references to the newly created Ninjas:
+
+        var ninja1 = new Ninja();
+        var ninja2 = new Ninja();
+
+Then we run the tests that ensure that each invocation of the method operates on the expected object:
+
+        assert(ninja.skulk() === ninja1,
+          “The 1st ninja is skulking”);
+        assert(ninja2.skulk() === ninja2,
+          “The 2nd ninja is skulking”);
+
+Constructor Return Values: Constructors are intended to initialize newly created objects, and that the newly constructed object is returned as a result of a constructor invocation (via the new operator). 
+
+But what happens when the constructor a value of it’s own? Example:
+
+        function Ninja(){
+          this.skulk = function() {
+            return true;
+          };
+          return 1;
+        }
+
+=> The Ninja function returns 1 if you call it as a function:
+        assert( Ninja() === 1, 
+          “Return value honored when not called as a constructor”);
+
+=> The Ninja function returns an object if you call it with the new operator, as a constructor:
+        var ninja = new Ninja();
+
+        assert(typeof ninja === “object”,
+          “Object returned when called as a constructor”);
+
+        assert(typeof ninja.skulk === “function”,
+          “ninja object has a skulk method”);
+
+NOW HERE’S A CONSTRUCTOR FUNCTION THAT RETURNS AN OBJECT (4.9):
+	
+      var puppet = {
+        rules: false
+      };
+	    // ^^ Creates our own object with a known property
+
+      function Emperor(){
+        this.rules = true;
+        return puppet;
+      }
+      // Returns that object despite initializing the object passed as this
+
+      var emperor = new Emperor();
+      //Invokes the function as a constructor
+
+      assert(emperor === puppet,
+        “The emperor is merely a puppet!”);
+      assert(emperor.rules === false,
+        “The puppet does not know how to rule!”);
+      //Tests show that the object returned by the constructor is assigned to the variable emperor (and not the object created by the new expression)
+
+
+When we call var emperor = new Emperor(); we’ve set up an ambiguous situation. We get one object passed to the constructor function in this, which we initialize, but then we return a completely different puppet object. Which object will reign supreme?
+
+      assert(emperor === puppet, “The emperor is merely a puppet!”);
+      assert(emperor.rules == false, “The puppet doesn’t know how to rule!”);
+
+Our tests indicate that the puppet object is returned as the value of constructor invocation, and that the initialization that we perform on the function context in the constructor was all for naught. The puppet has been exposed! 
+
+Here’s a summary:
+
+1. If the constructor returns an object, that object is returned as the value of the whole NEW expression	
+	…and the newly constructed object passed as this to the constructor is discarded.
+
+2. If, however, a non object is returned from the constructor, the returned value is ignored, and the newly created object is returned.
+
+=> because of these peculiarities, functions intended for use as constructors are generally coded differently from other functions…. see below:
