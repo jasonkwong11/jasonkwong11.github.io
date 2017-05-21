@@ -21,20 +21,20 @@ Actions we can take with JS objects:
 	
 3. They can be passed as arguments to functions:
 
-	function hide(ninja){
-		ninja.visibility = false;
-	}
-	hide({}); // a newly created object passed as an argument to a function
+		function hide(ninja){
+			ninja.visibility = false;
+		}
+		hide({}); // a newly created object passed as an argument to a function
 	
 4. They can be returned as values from functions:
 		
-	function returnNewNinja(){
-		return {};
-	}
+		function returnNewNinja(){
+			return {};
+		}
 	
 5. They can possess properties that can be dynamically created and assigned:
   
-    var ninja = {};
+    		var ninja = {};
 		ninja.name = “Hanzo”;
 
 
@@ -50,29 +50,29 @@ Functions in JS possess all the capabilities of objects and are thus treated lik
 	
 2. Assigned to variables, array entries, and properties of other objects
 
-	var ninjaFunction = function(){}; //assign a new function to a variable
+		var ninjaFunction = function(){}; //assign a new function to a variable
 
-	ninjaArray.push(function(){}); //Adds a new function to an array 
+		ninjaArray.push(function(){}); //Adds a new function to an array 
 
-	ninja.data = function(){}; // Assigns a new function as a property of another object
+		ninja.data = function(){}; // Assigns a new function as a property of another object
 
 3. Passed as arguments to other functions
 		
-	function call (ninjaFunction) {
-		ninjaFunction ();
-  }
-	call (function( ) { });
-	// A newly created function is passed as an argument to a function
+		function call (ninjaFunction) {
+			ninjaFunction ();
+  		}
+		call (function( ) { });
+		// A newly created function is passed as an argument to a function
 	
 4. Returned as values from functions
-	function returnNewNinjaFunction(){
-		return function(){};
-	}
-  //Returns a new function
+		function returnNewNinjaFunction(){
+			return function(){};
+		}
+  		//Returns a new function
 
 5. They can possess properties that can be dynamically created and assigned:
 		
-    var ninjaFunction = function () {};
+    		var ninjaFunction = function () {};
 		ninjaFunction.name = “Hanzo”;
 
 		//Adds a new property to a function
@@ -133,6 +133,6 @@ You can attach properties to functions:
 
 
 With this capability: attaching properties to functions, you can:
-  1. Storing functions in a collection allows us to easily manage related functions — for example, callbacks that have to be invoked when something of interest occurs.
-	2. Memorization allows the function to remember previously computed values, thereby improving the performance of subsequent invocations.
+1. Storing functions in a collection allows us to easily manage related functions — for example, callbacks that have to be invoked when something of interest occurs.
+2. Memorization allows the function to remember previously computed values, thereby improving the performance of subsequent invocations.
 
