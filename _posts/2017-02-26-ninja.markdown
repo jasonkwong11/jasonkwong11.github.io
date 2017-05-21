@@ -21,14 +21,14 @@ Storing Functions: In certain cases, (like when we need to manage collections of
 		  		}
 	  		}
 	  	};
-
-	  	function ninja (){}
-	  	assert(store.add(ninja),
+		
+			function ninja (){}
+	  		assert(store.add(ninja),
 		  	“Function was safely added.”);
-		  assert (!store.add(ninja),
+		 	 assert (!store.add(ninja),
 			  “But it was only added once.”); 
 		
-		  //Test that all works as planned.
+		  	//Test that all works as planned.
 
 Another useful trick to pull out of our sleeve when using function properties, is giving a function the ability to modify itself. This technique can be used to remember previously computed values, saving time during future computations.
 
