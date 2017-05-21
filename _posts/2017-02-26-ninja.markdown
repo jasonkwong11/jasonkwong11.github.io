@@ -4,9 +4,7 @@ title:  "JS Ninja: Understanding Functions: Part Two"
 date:   2017-02-26 12:00:01-0400
 ---
 
-Storing Functions:
-
-In certain cases, (like when we need to manage collections of callbacks that should be invoked when a certain event occurs), we want to store collections of unique functions.
+Storing Functions: In certain cases, (like when we need to manage collections of callbacks that should be invoked when a certain event occurs), we want to store collections of unique functions.
 
 1. Problem: determining which functions are new to the collection and should be added, and which are already resident and shouldn’t be added… don’t want duplications
 	… one obvious solution is to loop through the array checking for duplicates. But this performs poorly. 
