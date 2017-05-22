@@ -1,0 +1,138 @@
+---
+layout: post
+title:  "JS Ninja: Understanding Functions Part One"
+date:   2017-02-19 12:00:01-0400
+---
+
+Understanding JS functions is the key to unlocking the secrets of the language.
+Really understanding functions in JS is the single most important weapon you can wield.
+
+Functions are the primary modular units of execution. Except for the global JS code executed in the page-building phase, all of the script code that we’ll write for our pages will be within a function.
+
+Having functions that are versatile and powerful constructs gives us a great deal of flexibility and sway when writing code. 
+
+Actions we can take with JS objects:
+1. They can be created via literals: {}
+	
+2. They can be assigned to variables, array entries and properties of other objects.
+
+		e.g.: ninjaArray.push({});
+		//ninja.data = {};
+	
+3. They can be passed as arguments to functions:
+
+		function hide(ninja){
+			ninja.visibility = false;
+		}
+		hide({}); // a newly created object passed as an argument to a function
+	
+4. They can be returned as values from functions:
+		
+		function returnNewNinja(){
+			return {};
+		}
+	
+5. They can possess properties that can be dynamically created and assigned:
+  
+    		var ninja = {};
+		ninja.name = “Hanzo”;
+
+
+*****We can do almost the exact same things with functions also:
+
+Functions as First-Class Objects:
+	
+Functions in JS possess all the capabilities of objects and are thus treated like any other object in the language. We say that functions are first class objects, which can also be:
+
+1. Created via literals
+	
+  function ninjaFunction(){}
+	
+2. Assigned to variables, array entries, and properties of other objects
+
+		var ninjaFunction = function(){}; //assign a new function to a variable
+
+		ninjaArray.push(function(){}); //Adds a new function to an array 
+
+		ninja.data = function(){}; // Assigns a new function as a property of another object
+
+3. Passed as arguments to other functions
+		
+		function call (ninjaFunction) {
+			ninjaFunction ();
+  		}
+		call (function( ) { });
+		// A newly created function is passed as an argument to a function
+	
+4. Returned as values from functions
+		function returnNewNinjaFunction(){
+			return function(){};
+		}
+  		//Returns a new function
+
+5. They can possess properties that can be dynamically created and assigned:
+		
+    		var ninjaFunction = function () {};
+		ninjaFunction.name = “Hanzo”;
+
+		//Adds a new property to a function
+		
+Whatever we can do with objects, we can do with functions as well. Functions are objects, just with an additional, special capability of being invokable: functions can be called or invoked in order to perform an action.
+
+One of the characteristics of first-class objects is that they can be passed to functions as arguments. In the case of functions, this means we can pass a function as an argument to another function. That might be at a later point in application execution, call the passed - in function. This is an example of a more general concept known as a callback function.
+
+
+Callback Functions:
+
+Whenever we set up a function to be called at a later time, whether by the browser in the event handling phase or by other code, we’re setting up a callback. The term stems from the fact that we’re establishing a function that other code will later “call back” at an appropriate point of execution.
+
+Here we’ll look at how to use callbacks to handle events or to easily sort collections — typical real world examples of how callbacks are used.
+
+Here is the simplest, useless form of a callback:
+
+	function useless(ninjaCallback) {
+		return ninjaCallback();
+	}
+
+As useless as this function is, it demonstrates the ability to pass a function as an argument to another function.
+
+One of the most important features of JS is the ability to create functions in the code anywhere an expression can appear. In addition to making the code more compact and easy to understand (by putting function definitions near where they’re used), this feature can also eliminate the need to pollute the global namespace with unnecessary names when a function sin’t going to be referenced from multiple places within the code.
+
+Callbacks can be called from the browser:
+	
+	document.body.addEventListener(“mousemove”, function(){
+		var second = document.getElementById(“second”);
+		addMessage(second, “Event: mousemove”);
+   });
+
+That’s also a callback function, one that’s defined as an event handler to the mouse move event, and that will be called by the browser when that event occurs.
+
+Sorting with a Comparator:
+
+		var values = [0, 3, 2, 5, 7, 4, 1];
+
+		values.sort(function(value1, value2){
+			return value1 - value2;
+		});
+
+A functional approach allows us to create a function as a standalone entity, just as we can any other object type, and to pass it as an argument to a method, just like any other object type, which can accept it as a parameter, just like any other object type.
+	… thats first class status coming into play.
+
+
+Fun with Functions as Objects:
+
+You can attach properties to functions:
+	var ninja = {};
+	ninja.name = “hitsuke”;
+	//creates an object and assigns a new property to it
+
+
+	var wieldSword = function(){};
+	wieldSword.swordType = “katana”;
+	//creates a function and assigns a new property to it
+
+
+With this capability: attaching properties to functions, you can:
+1. Storing functions in a collection allows us to easily manage related functions — for example, callbacks that have to be invoked when something of interest occurs.
+2. Memorization allows the function to remember previously computed values, thereby improving the performance of subsequent invocations.
+

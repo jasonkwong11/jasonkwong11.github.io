@@ -1,0 +1,256 @@
+---
+layout: post
+title:  "JS Ninja: Understanding Functions: Part Two"
+date:   2017-02-26 12:00:01-0400
+---
+
+Storing Functions: In certain cases, (like when we need to manage collections of callbacks that should be invoked when a certain event occurs), we want to store collections of unique functions.
+
+1. Problem: determining which functions are new to the collection and should be added, and which are already resident and shouldn’t be added… don’t want duplications
+	… one obvious solution is to loop through the array checking for duplicates. But this performs poorly. 
+	… Instead use function properties to achieve this:
+
+		  var store = {
+			  nextId: 1,  //Keeps track of the next available ID to be assigned
+		  	cache: {}, // Creates an object to serve as a cache in which we’ll store functions
+			  add: function(fn){
+			  	if (!fn.id) {
+		  			fn.id = this.nextId ++;
+			  		this.cache[fn.id] = fn;
+		  			return true;
+		  		}
+	  		}
+	  	};
+		
+			function ninja (){}
+	  		assert(store.add(ninja),
+		  	“Function was safely added.”);
+		 	 assert (!store.add(ninja),
+			  “But it was only added once.”); 
+		
+		  	//Test that all works as planned.
+
+Another useful trick to pull out of our sleeve when using function properties, is giving a function the ability to modify itself. This technique can be used to remember previously computed values, saving time during future computations.
+
+Self-Memoizing functions:
+	Memoization is the process of building a function that’s capable of remembering it’s previously computed values. In a nutshell, whenever a function computes its result, we store that result alongside the function arguments. In this way, when another invocation occurs for the same arguments, we can return the previously stored result, instead of calculating it anew. 
+	… this greatly increases performance by avoiding computations already performed.
+	… particularly useful when performing calculations for animations, searching data that doesn’t change very often, or any time-consuming math
+
+
+Here’s a simplistic (and not efficient) algorithm for computing prime numbers. Although this is a simple example of a complex calculation, this technique is readily applicable to other expensive computations (such as deriving the MD5 hash for a string)
+
+      function isPrime(value){
+        if (!isPrime.answers){
+          isPrime.answers = {};
+        }
+        // line above creates the cache if it doesn’t exist
+
+        if (isPrime.answers[value] !== undefined) {
+          return isPrime.answers[value];
+        }
+        //line above checks for cached values. returns it if it exists
+
+        var prime = value !==1; 
+        // 1 is not a prime number
+
+        for (var i = 2; i < value ; i++){
+          if (value % i === 0) {
+            prime = false;
+            break;
+          }
+        }
+        return isPrime.answers[value] = prime;
+        // stores the computed value	
+      }
+
+      assert(isPrime(5), “5 is prime!”);
+      assert(isPrime(5).answers[5], “The answer was cached!”);
+      //Tests that it all works
+
+^^ This functional approach has two major advantages:
+1. The end user enjoys performance benefits for function calls asking for a previously computed value
+2. It happens seamlessly and behind the scenes; neither the end user nor the page author needs to perform any special requests or do any extra initialization in order to make it all work.
+
+
+^^ Here are the disadvantages:
+1. Any sorting of caching will certainly sacrifice memory in favor of performance
+2. Purists may consider that caching is a concern that shouldn’t be mixed with the business logic; a function or method should do one thing and do it well (see ch 8)
+3. It’s difficult to load-test or measure the performance of an algorithm such as this one, because our results depend on the previous inputs to the function
+
+How to define Functions:
+
+JS functions are usually defined by using a function literal that creates a function value in the same way that, for example, a numeric literal creates a numeric value.
+
+Remember that as first-class objects, functions are values that can be used in the language just like the values, such as strings and numbers. And whether you realize it or not, you’ve been doing that all along.
+
+JS provides a couple ways to define functions, which can be divided into four groups:
+
+1. Function declarations and function expressions: the two most common, yet subtly different ways of defining functions. Often people don’t even consider them as separate but as you’ll see, being aware of their differences help us understand when functions are available for invocation:
+
+		  function myFun(){ return 1; }
+
+2. Arrow functions (often called lambda functions): enables us to define functions with far less syntactic clutter. They even solve one common problem with callback functions.
+
+		  myArg => myArg*2
+
+3. Function constructors: a not so-often used way of defining functions that enables us to dynamically construct a new function from a string that can also be dynamically generated.
+
+		  new Function(‘a’, ‘b’, ‘return a + b’)
+
+4. Generator functions: this es6 addition to JS enable us to create functions that, unlike normal functions, can be exited and re-entered later in the application execution, while keeping the values of their variables across these re-entrances.
+
+We can define generator versions of function declarations, function expressions, and function constructors: 
+
+		  function* myGen(){ yield 1; }
+
+*** Important to understand these differences because the way in which a function is defined significantly influences when the function is available to be invoked and how it behaves, as well as on which object the function can be invoked.
+
+Difference between function expressions and function declarations: Besides the position in code where they’re placed, another difference: For function declarations, the function name is mandatory, whereas for function expressions it’s completely optional. 
+
+If a function expression is assigned to a variable, we can use that variable to invoke the function.
+
+        e.g.: 
+          var doNothing = function(){};
+          doNothing();
+
+Or if it’s an argument to another function, we can invoke it within that function through the matching parameter name:
+
+        function doSomething(action){
+          action();
+        };
+
+
+Immediate Functions: Function expressions can even be placed in positions where they look a bit weird at first, such as at a location where we’d normally expect a function identifier.  For example:
+
+Normal/standard function call:
+
+        myFunctionName(3);
+        // An expression that evaluates to a function, in this case an identifier
+
+Immediate call to a function expression:
+        ( function( ) {} )(3);
+        // An expression that evaluates to a function, in this case a function expression
+
+^^ When we make a function call, we use an expression that evaluates to a function, followed by a pair of function call parentheses, which might contain arguments. In the most basic function call, we put an identifier that evaluates to a function. But the expression to the left of the calling parenthesis doesn’t have to be a simple identifier; it can be any expression that evaluates to a function.
+
+E.g.: a simple way to specify an expression that evaluates to a function is to use a function expression. In the immediate call to a function expression, we first create a function, and then we immediately invoke the newly created function. 
+
+This, by the way, is called an immediately invoked function expression (IFFE), or immediate function for short, and is an important concept in JS development because it allows us to mimic modules in JS.
+
+We need parentheses around the function expression because the JS parser has to be able to easily differentiate between function declarations and function expressions. If we leave out the parentheses around the function expression, and put our immediate call as a separate function(){}(3), the JS parser will start processing it, will conclude, because it’s a separate statement starting with the key word function that its dealing with a function declaration. To avoid this, we place the function expression within parentheses, signaling to the JS parser that it’s dealing with an expression, not a statement.
+
+Alternative way of achieving the same goal: (function () {} (3))
+
+Arrow functions are a shorter more succinct way, to make functions… a simplification of function expressions.
+
+For example: 
+
+      var values = [0, 3, 2, 5, 7, 4, 8, 1];
+      values.sort(function(value1, value2){
+        return value1 - value2;	
+      });
+
+^^ This examples uses a callback function expression sent to the sort method of the array object, this callback will be invoked by the JS engine to sort the values of the array in descending order. With arrow functions:
+
+        var values = [0, 3, 2, 5, 7, 4, 8, 1];
+        values.sort((value1, value2) => value1 - value2);
+
+In other cases, when our arrow function aren’t that simple and require more code, we can include a block of code after the arrow operator:
+
+        var greet = name => {
+          var helloString = ‘Greetings ’;
+          return helloString + name;
+        };
+
+In this case, the return value of the arrow function behaves as in a standard function. 
+
+**If there’s no return statement, the result of the function invocation will be undefined. 
+
+Arguments and Function Parameters:
+
+When discussing functions, we often use the terms argument and parameter interchangeably. But here’s the difference:
+
+A parameter: a variable that we list as part of a function definition.
+
+An argument: a value that we pass to the function when we invoke it.
+
+Example:
+
+      function skulk(ninja) // ninja is a parameter
+        return performAction(ninja, “skulking”); //ninja and “skulking” are arguments
+      }
+
+** When a list of arguments is supplied as part of a function invocation, these arguments are assigned to the parameters in the function definition in the order specified.
+
+** If we have a different number of arguments than parameters, no error is raised. JS is perfectly fine with this situation and deals with it by:
+… If more arguments are supplied than there are parameters, the “excess” arguments aren’t assigned to parameter names
+… The excess argument(s) can still be accessed (see next chapter)
+… If there are more parameters than arguments, the parameters that have no corresponding argument are set to undefined.
+
+REST PARAMETERS:
+
+Here’s a function that multiplies the first argument with the largest of the remaining arguments.
+In ES6, we can use rest parameters:
+
+        function multiMax(first, …remainingNumbers){
+          var sorted = remainingNumbers.sort(function(a, b){
+            return b - a;
+          });
+          return first * sorted[0];
+        }
+        assert(multiMax( 3, 1, 2, 3) === 9,
+          “3*3=9 (First arg, by largest.)”);
+
+==> By prefixing the last-named argument of a function with an ellipsis (…), we turn it into an array called the rest parameters, which contains the remaining passed-in arguments.
+
+** NOTE: Only the last function parameter can be a rest parameter. Trying to put the ellipsis in front of any parameter that isn’t last will only throw a SyntaxError: parameter after rest parameter.
+
+DEFAULT PARAMETERS:
+
+For references, here’s the Old way to do default parameters:
+
+        function performAction(ninja, action){
+          action = typeof action === “undefined” ? “skulking” : action;
+          return ninja + “ “ + action;
+        }
+
+Many web UI components can be configured. For example, if we’re developing a slider component, we might want to give our users an option to specify a timer interval after which one item is replaced with another, as well as an animation that will b used as the change occurs.
+… However some users don’t care and will use the default settings. Default params are ideal for such situations.
+
+	Example:
+		
+	With this function:
+
+        function performAction(ninja, action){
+          return ninja + “ “ + action;
+        }
+
+	…instead of:
+
+        performAction(“fuma”, “skulking”);
+        performAction(“yoshi”, “skulking”);
+        performAction(“hattori”, “skulking”);
+        performAction(“yagyu”, “sneaking”);
+
+	…do this ES6 way:
+
+        function performAction(ninja, action = “skulking”){
+          return ninja + “ “ + action;
+        }
+
+** We can assign any values to default params: simple, primitive values such as numbers or strings, but also complex types such as objects, arrays, and functions. The values are evaluated on each function call from left to right when assigning values to later default parameters, we can reference previous parameters:
+
+Example:
+
+        function performAction(ninja, action = “skulking”,
+            message = ninja + “ “ + action) {
+            // ^^ We can place arbitrary expressions as default param values, in the process even referencing previous function       parameters.
+          return message;
+        }
+
+        assert(performAction(“Yoshi”) === “Yoshi skulking”, “Yoshi is skulking”);
+
+**Although JS allows you to do this, be cautious as this doesn’t enhance code readability and should be avoided, whenever possible. But moderate use of default parameters — as means of avoiding null values, or as relatively simple flags that configure the behaviors of our functions — can lead to much simpler and more elegant code.
+
+
