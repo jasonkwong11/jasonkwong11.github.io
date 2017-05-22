@@ -1,0 +1,238 @@
+---
+layout: post
+title:  "JS Ninja: Function Invocation II: Functional JS"
+date:   2017-03-12 12:00:01-0400
+---
+Considerations for Constructors: The intent for constructors is to initialize the new object that will be created by function invocation to initial conditions. Although such functions can be called “normal” functions, or even assigned to object properties in order to be invoked as methods, they’re generally not useful as such. For example:
+
+    	function Ninja(){
+    		this.skulk = function(){
+    			return this;
+    		};
+    	}
+
+    	var whatever = Ninja();
+
+
+^^ We can call Ninja as a simple function, but the skulk property would be created on window in nonstrictmode — not a useful operation. Things go even more awry in strict mode, as this would be undefined and our JS application would crash. (This is a good thing: if we make this mistake in non strict mode, it might escape our notice, unless we had good tests).
+
+
+Constructors are generally coded and used in a manner that’s different from other functions, and aren’t that useful unless invoked as constructors.
+	… that’s why We always Start them with Uppercase.
+
+Functions and methods are generally named starting with a verb that describes what they do (skulk, creep, sneak, doSomethingWonderful) and start with a lowercase letter.
+
+Constructors makes it more elegant to create multiple objects that conform to the same pattern without having to repeat the same code over and over.
+
+Here’s another way JS lets us invoke functions that provides a great deal of control over the invocation details:
+
+INVOCATION WITH THE APPLY AND CALL METHODS:
+
+One of the major differences between the types of function invocation is what object ends up as the function context references by the implicit this parameter that’s passed to the executing function:
+
+-For methods it’s the method’s owning object
+-For top level functions, it’s either window or undefined (depending on current strictness)
+-For constructors, it’s a newly created object instance
+
+To get a glimpse of why we’d care about this ability, we’ll look at a practical example that illustrates a surprisingly common bug related to event handling.
+
+    	<button id=“test”> Click Me! </button>
+    	// A button element to which we’ll assign an event handler
+
+    	<script>
+    		// Below: a constructor function that creates objects that retain state regarding our button. With it, we’ll track whether the button has been clicked.
+
+    		function Button(){
+    			this.clicked = false;
+    			//Below: this declares the method that we’ll use as the click handler. Because it’s a method of the button object, we use THIS within the function to get a reference to the object.
+    			this.click = function () {
+    				this.clicked = true;
+
+    				//Below: within the method, we test that the button state has been correctly changed after a click
+    				assert(button.clicked, “The button has been clicked”);
+    			};
+    		}
+
+    		//Below:Creates an instance that will track whether the button was clicked:
+    		var button = new Button();
+
+    		//Below: Establishes the click handler on the button
+    		var elem = document.getElementById(“test”);
+    		elem.addEventListener(“click”, button.click);
+    	</script>
+
+^^THIS FAILS… WHY?
+
+If we had called the function via button.click(), the context would have been the button, because the function would be invoked as a method on the button object.
+
+But in this example, the event-handling system of the browser defines the context of the invocation to be the target element of the event, which causes the context of the invocation to be the target element of the event, which causes the context to be the <button> element, not the button object.
+	…basically we set our click state on the wrong object!
+
+This is a surprisingly common problem. Here’s how to tackle it by explicitly setting the function context by using the apply and call methods.
+
+
+USING THE APPLY AND CALL METHODS:
+
+JS provides a means for us to invoke a function and to explicitly specify any object we want as the function context. We do this through the use of one of two methods that exist for every function: apply and call.
+
+YES, METHODS OF FUNCTIONS. As first-class objects, created by the built-in Function constructor, functions can have properties just like any other object type, including methods.
+
+To invoke a function by using it’s apply method, we pass two parameters to apply:
+	1. The object to be used as the function context
+	2. An array of values to be used as invocation arguments
+
+The call method is used in a similar manner, except that the arguments are passed directly in the argument list rather than as an array.
+
+	Example:
+
+    		function juggle(){
+    			var result = 0;
+    			for (var n = 0; n < arguments.length; n++) {
+    				result += arguments[n];
+    			}
+    			this.result = result;
+    		}
+
+    		// ^^ This function “juggles” the arguments and puts the result onto whatever object is the function context
+
+    		var ninja1 = {};
+    		var ninja2 = {};
+
+    		//^^ These objects are initially empty and will serve as our test subjects
+
+    		juggle.apply(ninja, [1,2,3,4]);
+    		juggle.call(ninja2, 5, 6, 7, 8);
+
+    		assert(ninja1.result === 10, “juggled via apply”);
+    		assert(ninja2.result === 26, “juggled via call”);
+
+    		//The tests show how the juggle result is placed on the objects passed to the methods
+
+^^ These two methods, call and apply are useful when you need to usurp what would normally be the function context with an object of our choosing — something that can be useful when invoking callback functions
+
+FORCING THE FUNCTION CONTEXT IN CALLBACKS: use a simple function to perform an operation on every entry of an array:
+
+OLD WAY: in imperative programming, its common to pass the array to a method and use a for loop to iterate over every entry, performing the operation on each entry:
+
+    		function(collection){
+    			for (var n = 0; n < collection.length; n++){
+    				// do something to collection[n]
+    			}
+    		}
+
+NEW/FUNCTIONAL WAY: create a function that operates on a single element and passes each entry to that function.
+
+    		function(item){
+    			/* do something to item*/
+    		}
+
+The difference lies in thinking at a level where functions are the main building blocks of the program. You might think it’s moot, and that all you’re doing is moving the for loop out one level, but we’re not done massaging this example yet.
+
+To facilitate a more functional style, all array objects have access to forEach function that invokes a callback on each element within an array. This is often more succinct, and this style is preferred over the traditional for statement by those familiar with function programming.
+	… it’s also more reusable
+	… its better for closures
+
+When iterating with a forEach loop, the function COULD pass the current element to the callback as parameter, but most make the current element the function context of the callback.
+
+
+Even though all modern JS engines support a forEach method on an array, here’s our own simplified version:
+
+    		//below: our iteration function accepts the collection to be iterated over and a callback function
+
+    		function forEach(list, callback){
+    			for (var n = 0; n < list.length; n++){
+    				callback.call(list[n], n);
+
+    				//^^ the callback is invoked such that the current iteration item is the function context
+
+    			}
+    		}
+
+
+    		//Below: our test subject:
+
+    		var weapons = [
+    			{type: ’shuriken’},
+    			{type: ‘katana’},
+    			{type: ’nunchucks’}
+    		]
+
+    		//Below: call the iteration function and ensures that the function context is correct for each invocation of the callback
+
+    		forEach(weapons, function(index){
+    			assert(this === weapons[index],
+    				“Got the expected value of ” + weapons[index].type);
+    		});
+
+The iteration function sports a simple signature that expects the array of objects to be iterated over as the first argument, and the callback function as the second. The function iterates over the array entries, invoking the callback function for each entry:
+
+We use the call method of the callback function, passing the current iteration entry as the first parameter and the loop index as the second. This should cause the current entry to become the function context, and the index to be passed as the single parameter to the callback.
+
+Which to use: Call or Apply?
+Answer: whichever one improves code clarity.
+Practical answer: if we have a bunch of unrelated values in variables or specified as literals, call lets us list them directly in its arguments list. But if we already have the argument values in an array, or if it’s convenient to collect them as such, apply could be the better choice.
+
+Fixing the Problem of Function Contexts:
+
+In callback functions(such as event handlers), the function context might not be exactly what we expect, but we can use the call and apply methods to get around it. THERE ARE TWO OTHER OPTIONS: ARROW FUNCTIONS AND THE BIND METHOD, WHICH CAN, IN CERTAIN CASES, ACHIEVE THE SAME EFFECT, BUT IN A MUCH MORE ELEGANT WAY.
+
+USING ARROW FUNCTIONS TO GET AROUND FUNCTION CONTEXTS:
+Besides allowing us to create functions in a more elegant way than standard function declarations and function expressions, the arrow function introduced in the previous chapter have one feature that makes them a particularly good as callback functions:
+
+ARROW FUNCTIONS DON’T HAVE THEIR OWN THIS VALUE. Instead, they remember the value of the this parameter at the time of their definition.
+
+USING ARROW FUNCTIONS TO WORK AROUND CALLBACK FUNCTION CONTEXTS:
+
+    	<button id=“test”>Click Me! </button> // A button element to which we’ll assign an eventhandler
+    	<script>
+    		function Button (){
+    		//^^ A constructor function that creates objects that retain state regarding our button. With it, we’ll track whether the button has been clicked.
+    			this.clicked = false;
+
+    			//below: declares the arrow function that we’ll use as a click handler. because it’s a method of the object, we use this within the function to get a reference to the object.
+
+    			this.click = () => {
+    				this.clicked = true;
+    				assert(button.clicked, “The button has been clicked”);//
+    			};
+    		}
+    		var button = new Button();
+    		var elem = document.getElementById(“test”);
+    		elem.addEventListener(“click”, button.click);
+
+    		// ^^ establishes the click handler on the button.
+    	</script>
+
+The only change, when compared to listing 4.10 is that listing 4.13 uses an arrow function:
+
+    		this.click = () = {
+    			this.clicked = true;
+    			assert(button.clicked, “The button has been clicked”);
+    		}
+
+Now this code works. Because the THIS function context is assigned to the button object instead of the global document object. The button object keeps track of the clicked state.
+  … Our click handler was created inside the Button constructor as an arrow function
+	… remember, arrow functions don’t get their own implicit THIS parameter when we call them; instead they remember the value of the THIS parameter at the time they were created
+	… here the click arrow function was created inside a constructor function, where the THIS parameter is the newly constructed object, so whenever we (or the browser) call the click function, the value of the THIS parameter will always be bound to the newly constructed button object.
+
+CAVEAT: ARROW FUNCTIONS AND OBJECT LITERALS: Because the value of the THIS parameter is picked up at the moment that the arrow function is created, some seemingly strange behaviors can result.
+
+Look at the button-click handler example. If we replace the constructor function with an object literal (because we only have one button), the THIS context will be the global window.
+	… This is because arrow functions pick up the value of the THIS parameter at the moment of their creation.
+	… Because the click arrow function is created as a property value on an object literal and the object literal is created in global code, the this value of the arrow function will be the THIS value of the global code. (not on our button object)
+
+USING THE BIND METHOD:
+
+Bind, in short, creates a new function. This function has the same body but it’s context is always bound to a certain object, regardless of the way we invoke it.
+
+Note that calling bind doesn’t modify the original function
+
+From the previous example:
+
+    	var elem = document.getElementById(“test”);
+    	elem.addEventListener(“click”, button.click.bind(button));
+    	//^^ Uses a bind function to create a new function bound to the button object
+
+    	var boundFunction = button.click.bind(button);
+    	assert(boundFunction != button.click,
+    			“Calling bind creates a completely new function”);
