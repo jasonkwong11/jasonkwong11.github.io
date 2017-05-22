@@ -4,7 +4,7 @@ header-img: img/virginisland.jpg
 email: jasonkwong11@gmail.com
 copyright_name: jasonkwong11
 description: > # this means to ignore newlines until "baseurl:"
-  You found the blog of a Rails and Javascript Developer!
+  The Scribblings of a Javascript (formerly Rails) Developer!
 baseurl: "" # the subpath of your site, e.g. /blog
 twitter_username: jasonkwongish
 github_username:  jasonkwong11
