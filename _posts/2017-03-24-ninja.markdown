@@ -1,0 +1,133 @@
+---
+layout: post
+title:  "JS Ninja: Scope and Execution Context"
+date:   2017-03-24 12:00:01-0400
+---
+In JS, the fundamental unit of execution is a function. We use them all the time, to calculate something, to perform side effects such as changing the UI, to achieve code reuse, or to make our code easier to understand.
+	
+When a function does it’s thing, our program execution has to return to the position from which the function was called. But have you ever wondered who the JS engine keeps track of all these executing functions and return positions.	
+
+Remember, there are two main types of JS code: 
+1. global code, placed outside all functions
+2. function code, contained in functions.
+
+When our code is being executed by the JS engine, each statement is executed in a certain execution context.
+
+And just as we have two types of code, we have two types of execution contexts: 
+1. a global execution context 
+2. a function execution context.
+
+Here’s the significant difference: There’s only one global execution context, created when our JS program starts executing, whereas a new function execution context is created on each function invocation.
+
+Note: Remember from Ch4. that a function context is the object on which our function is invoked, which can be accessed through the this keyword. An execution context, although it has a similar name, is a completely different thing. It’s an internal JS concept that the JS engine uses to track the execution of our functions.
+
+Remember JS is based on a single threaded execution model: only one piece of code can be executed at a time. Every time a function is invoked, the current execution context has to be stopped, and a new function execution context, in which the function code will be evaluated, has to be created.
+
+After the function performs its task, its function execution context is usually discarded and the caller execution context restored. So there’s a need to keep track of all these execution contexts —both the one that’s executing and the ones that are patiently waiting.
+
+The easiest way to do this is by using a STACK, called the execution context stack (or often called a call stack)
+
+A STACK is a fundamental data structure in which you can put new items only to the top and can take existing items from the top.
+… Think of a stack of trays in a cafeteria: when you want to take one, you pick one from the top. And the cafeteria worker who has a new clean one also puts it on the top.
+
+The Creation of Execution Contexts:
+
+			function skulk(ninja){
+				report( ninja + “ skulking”);
+			}
+			// ^^ A function that calls another function
+
+			function report(message) {
+				console.log(message);
+			}
+			// ^^ A function that reports a message through the built-in console.log function
+
+			skulk(“Kuma”);
+			skulk(“Yoshi”);
+			// ^^ Two function calls from global code.
+
+The Behavior of the Execution Context Stack:
+
+1. The program starts executing with the global execution context on the stack.
+	… created once per JS program, once per page in web pages.
+2. When the skulk function is called, a new function context is pushed onto the stack, and the global execution context is paused.
+3. A new function context for the report function is pushed onto the stack when it is called. The skulk execution context is paused.
+4. When the report function finishes executing, it’s function context is popped off of the stack. The skulk execution context resumes execution.
+5. The skulk execution context is popped off of the stack when the skulk function finishes execution. The global execution context resumes execution.
+
+The whole process is repeated in a similar way for the second call to the skulk function, now with the argument Yoshi. Two new function execution contexts are created and pushed to the stack, skulk(“Yoshi”) and report(“Yoshi skulking”), when the respective functions are called. These execution contexts are also popped off the stack when the program returns from the matching function.
+
+Even though the execution context stack is an internal JS concept, you can explore it in any JS debugger, where it’s referred to as a call stack.
+
+Besides keeping track of the position in the application execution, the execution context is vital in identifier resolution, the process of figuring out which variable a certain identifier refers to. The execution context does this via the lexical environment.
+
+KEEPING TRACK OF IDENTIFIERS WITH LEXICAL ENVIRONMENTS.
+
+A lexical environment is an internal JS engine construct used to keep track of the mapping from identifiers to specific variables. For example, consider the following code:
+
+			var ninja = “Hattori”;
+			console.log(ninja);	
+
+The lexical environment is consulted when the ninja variable is accessed in the console.log statement
+
+NOTE: Lexical environments are an internal implementation of the JS scoping mechanism, and people often colloquially refer to them as scopes.
+
+Usually, a lexical environment is associated with a specific structure of JS code. It can be associated with a function, a block of code, or the catch part of the try-catch statement.
+
+Each of these structures (functions, blocks, and catch parts) can have it’s own separate identifier mappings.
+
+NOTE: in pre-ES6 versions of JS, a lexical environment could be associated with only a function. Variables could be only function scoped. This caused a lot of confusion. Because JS is a C-like language, people coming from other C-like languages naturally expected some low level concepts, such as the existence of block scopes, to be the same. With ES6, this is finally fixed.
+
+CODE NESTING:
+
+Lexical environments are heavily based on code nesting, which enables one code structure to be contained within another.
+
+Here’s an example:
+
+			<script>
+				var ninja = “Muneyoshi”;
+				function skulk (){		// the skulk function is contained within global code
+					var action = “skulking”;
+				
+					function report(){ 	// the report function is nested within the skulk function
+						var reportNum = 3;
+
+						for (var i = 0; i < reportNum; i++){		//the for loop is nested within the report function
+							console.log(ninja + “ “ + action + “ “ + i);
+						}
+					}
+					report();
+				}
+				skulk();
+			</script>
+
+1. The for loop is nested within the report function
+2. The report function is nested within the skulk function
+3. The skulk function is nested within global code.
+
+In terms of scopes, each of these code structures gets an associated lexical environment every time the code is evaluated. 
+… For example, on every invocation function, a new function lexical environment is created.
+
+Also, it’s important to emphasize that an inner code structure has access to the variables defined in outer code structures; for example, the for loop can access the variables from the report function, the skulk function, and the global code.
+ 
+HOW does the JS engine keep track of all these variables, and what’s accessible from where? This is where lexical environments jump in.
+
+CODE NESTING AND LEXICAL ENVIRONMENTS:
+
+In addition to keeping track of local variables, function declarations and function parameters, each lexical environment has to keep track of its outer (parent) lexical environment.
+
+… This is necessary because we have to be able to access variables defined in outer code structures; if an identifier can’t be found in the current environment, the outer environment is searched.
+
+=> this stops either when the matching variable is found, or a with a reference error if we’ve reached the global environment and there’s no sign of the searched-for identifier
+
+In this example, the report function is called by the skulk function, which in turn is called by the global code. Each execution context has a lexical environment associated with it that contains the mapping for all identifiers defined directly in that context.
+
+Example: the global environment holds the mappings for identifiers ninja and skulk, the skulk environment holds the mapping for the identifiers action and report, and the report environment holds the mapping for the intro identifier.
+
+In a particular execution context, besides accessing identifiers defined directly in the matching lexical environment, our programs often access other variables defined in outer environments.
+
+Inner functions have access to variables in it’s outer environments. JS does this by taking advantage of functions as first class objects…
+
+*** Whenever a function is created, a reference to the lexical environment in which the function was created is stored in an internal (meaning you can’t access or manipulate it directly) property named [[ Environment ]]; double brackets is the notation that we’ll use to mark these internal properties. 
+
+*** Whenever a function is called, a new function execution context is created and pushed onto the execution context stack. In addition, a new associated lexical
