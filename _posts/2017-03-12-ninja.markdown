@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "JS Ninja: Function Invocation II: Functional JS"
+title:  "JS Ninja: Function Invocation II: Constructors/Appy+Call"
 date:   2017-03-12 12:00:01-0400
 ---
 Considerations for Constructors: The intent for constructors is to initialize the new object that will be created by function invocation to initial conditions. Although such functions can be called “normal” functions, or even assigned to object properties in order to be invoked as methods, they’re generally not useful as such. For example:
