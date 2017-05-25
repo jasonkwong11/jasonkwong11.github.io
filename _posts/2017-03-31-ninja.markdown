@@ -1,0 +1,155 @@
+---
+layout: post
+title:  "JS Ninja: var, let, const"
+date:   2017-03-31 12:00:01-0400
+---
+In JS, we can use three keywords for defining variables: var, let, and const. They differ in two aspects: mutability and their relationship toward the lexical environment (which means scope).
+
+NOTE: the keyword var has been part of JS since its beginning, whereas let and const are ES6 additions.
+
+1. Variable mutability:
+
+If we were to divide variable declaration keywords by mutability, we’d put const on one side and var and let on the other side. 
+
+Const variables are immutable, meaning that their value can be set only once.
+
+Var and Let variables are typical run-of-the-mill variables, whose value we can change as many times as necessary.
+
+CONST VARIABLES
+
+A const variable is similar to a normal variable, with the exception that we have to provide an initialization value when it’s declared, and we can’t assign a completely new value to it afterward.
+…Hmmm not very variable, is it?
+
+Const variables are often used for two slightly different purposes:
+	-Specifying variables that shouldn’t be reassigned (and in the rest of the book, we use them mostly in this regard).
+	-Referencing a fixed value, for example, the maximum number of ronin in a squad, MAX_RONIN_COUNT,  by name instead of using a literal number, such as 234.
+	… this makes our programs easier to understand and maintain. Our code isn’t filled with seemingly arbitrary literals (234), but meaningful names (MAX_RONIN_COUNT) whose values are specified in only one place.
+
+In either case, const variables safeguards our code against unwanted or accidental modifications and we’ve even made it possible for the JS engine to do some performance optimizations
+
+Here’s an example:
+
+			const firstConst = “samurai”;
+			assert(firstConst === “samurai”, “firstConst is a samurai”);
+
+			//Defines a const variable and verifies that the value was assigned
+
+			try {
+				firstConst = “ninja”;
+				fail(“Shouldn’t be here”);
+			} catch(e){
+				pass(“An exception has occurred”);
+			}
+
+			assert (firstConst === “samurai”,
+				“firstConst is still a samurai!”);
+
+			//^^ Attempting to assign a new value to a const variable throws an exception
+
+			const secondConst = {};	// Creates a new const variable and assigns a new object to it
+
+			// below: we can’t assign a complete secondConst variable, but there’s nothing to stop us from modifying the one we already have. The exact same thing holds for arrays
+
+			secondConst.weapon = “wakizashi”;
+			assert(secondConst.weapon === “wakizashi”,
+				“We can add new properties”);
+
+HERE’S THE RELATIONSHIPS BETWEEN VARIOUS TYPES OF VARIABLES AND LEXICAL ENVIRONMENTS:
+
+The three types of variable definitions — var, let, const can also be categorized by their relationship with the lexical environment (in other words, by their scope).
+
+In this case, we can put var on one side, and let and const on the other side.
+
+USING THE VAR KEYWORD:
+	When we use the var keyword, the variable is defined in the closest function or global lexical environment. (Note that blocks are ignored!!) This is a long-standing detail of JS that has tripped up many developers coming from other languages.
+
+Example:
+
+			var globalNinja = “Yoshi”;	// defines a global variable, using var;
+
+			function reportActivity(){
+				var functionActivity = “jumping”;	// defines a function local variable, using var
+
+				// below: within the for loop, we can access the block variables, function variables, and global variables (nothing surprising here)
+
+				for (var i = 1; i < 3; i++){
+					var forMessage = globalNinja + “ “ + functionActivity;
+					assert(forMessage === “Yoshi jumping”,
+						“Yoshi is jumping within the for block”);
+					assert(i, “Current loop counter:” + i);
+				}
+				
+				assert( i === 3 && forMessage === “Yoshi jumping”,
+					“Loop variables accessible outside of the loop”); // But the variables of the for loop are also accessible outside of the for loop;
+			}
+
+			reportActivity();
+
+			//below: normally, none of the function variables are accessible outside of the function:
+
+			assert(typeof functionActivity === “undefined”
+				&& typeof i === “undefined” && typeof forMessage === “undefined”,
+				“We cannot see function variables outside of a function”)
+
+*IMPORTANT:^^*** What’s strange with JS and what confuses a lot of developers coming from other languages, is that we can access the variables defined even outside of those blocks. (THE I VARIABLE AND FORMESSAGE) ***
+=> THIS STEMS FROM THE FACT THAT VARIABLES DECLARED WITH THE KEYWORD VAR ARE ALWAYS REGISTERED IN THE CLOSEST FUNCTION OR GLOBAL LEXICAL ENVIRONMENT, WITHOUT PAYING ANY ATTENTION TO BLOCKS.
+
+When defining variables with the keyword var, a variable is defined in the closest function or global environment (while ignoring block environments). In our case, the variables forMessage and i are registered in the reportActivity environment (the closest function environment), even though they’re contained within a for loop
+
+Here we have three lexical environments:
+
+1. The global environment in which the globalNinja variable is registered(because this is the closest function or global lexical environment)
+
+2. The reportActivity environment, created on the reportActivity function invocation, which contains the functionActivity, i, and forMessage variables because they’re defined with the keyword var, and this is their closest function environment
+
+3. The for block environment, which is empty, because var-defined variables ignore blocks (even when contained within them)
+
+Because this behavior is a bit strange, the ES6 version of JS offers two new variable declaration keywords: let and const
+
+USING LET AND CONST TO SPECIFY BLOCK-SCOPED VARIABLES:
+
+Unlike var, which defines the variable in the closest function or global lexical environment, the let and const keywords are more straightforward. They define variables in the closest lexical environment (which can be a block environment, a loop environment, a function environment, or even the global environment)
+
+Let’s rewrite our previous example to use const and let:
+
+			const GLOBAL_NINJA = “Yoshi”;		
+
+			//^^Defines a global variable, using const. Global const variables are usually written in uppercase.
+
+			function reportActivity(){
+				const functionActivity = “jumping”;
+				//^^ Defines a function local, using const
+
+				for (let i = 1; i < 3; i++) {
+					let forMessage = GLOBAL_NINJA + “ “ + functionActivity;
+				
+					//^^ Defines two variables in the for loop, using let;
+					//below: Within the for loop, we can access the block variable, function variables, and global variables — nothing surprising there.
+
+					assert(forMessage === “Yoshi jumping”,
+						“Yoshi is jumping within the for block”);
+					assert(i, “Current loop counter: ” + i);
+				}
+
+				assert (typeof i === “undefined” && typeof forMessage === “undefined”,
+					“Loop variables not accessible outside the loop”)
+
+				// ^^ now, the variables of the for loop aren’t accessible outside the for loop	
+			}
+
+			reportActivity();
+
+			assert ( typeof functionActivity === “undefined”
+				&& typeof i === “undefined” && typeof forMessage === “undefined”,
+					“We cannot see function variables outside of a function”);
+
+			// ^^ Normally, none of the function variables are accessible outside the function
+
+Note: we still have 3 lexical environments: global, reportActivity environment bound to the reportActivity function, and the block environment for the for loop body.
+
+But because we’re using the let and const keywords, the variables are defined in their closest lexical environment:
+	1. the GLOBAL_NINJA variable is defined in the global environment
+	2. the reportActivity variable in the reportActivity environment
+	3. the i and forMessage variables defined in the for block environment
+
+Next, we’ll discuss the exact process by which identifiers are defined within lexical environments. This will help us better understand some commonly occurring bugs.
