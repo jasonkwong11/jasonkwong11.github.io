@@ -1,0 +1,80 @@
+---
+layout: post
+title:  "JS Ninja: How JS Registers Identifiers"
+date:   2017-04-07 12:00:01-0400
+---
+JS isn’t picky about where we define our functions. We can choose to place function declarations before or even after their respective calls. 
+
+THE PROCESS OF REGISTERING IDENTIFIERS:
+
+How did the JS engine know that a function named check exists? It turns out that the JS engine cheats a little and that the execution of JS occurs in two phases.
+
+FIRST PHASE: activated whenever a new lexical environment is created. In this phase, the CODE ISN’T EXECUTED, but the JS engine visits and registers all declared variables and functions within the current lexical environment.
+
+SECOND PHASE: Javascript now executes in the second phase after the first phase. The exact behavior depends on the type of variable (let, var, const, function declaration) and the type of environment (global, function, or block).
+
+Here’s the process:
+
+1. If we’re creating a function environment, the implicit arguments identifier is created, along with all formal function parameters and their arguments values. If we’re dealing with non function environment, this step is skipped.
+
+2. If we’re creating a global or a function environment, the current code is scanned (without going into the body of other functions) for function declarations (but not function expressions or arrow functions!)
+
+For each discovered function declaration, a new function is created and bound to an identifier in the environment with the function’s name. 
+
+…If that identifier name already exists, its value is overwritten. If we’re dealing with block environments, this step is skipped.
+
+3. The current code is scanned for variable declarations. In function and global environments, all variables declared with the keyword var and defined outside other functions (but they can be placed within blocks!) are found, and all variables declared with the keywords let and const defined outside other functions and blocks are found.
+	- Outer variables are found first, if declared with var.
+	- The variables declared with keywords let and const defined outside other functions and blocks are found.
+	- In block environments, the code is scanned only for variables declared with the keywords let and const, directly in the current block. 
+		… For each discovered variable, if the identifier doesn’t exist in the environment, the identifier is registered and its value initialized to undefined. But if the identifier exists, it’s left with its value.
+
+MORE CONCISE SUMMARY OF THE ABOVE:
+
+Function Environment? 
+	Yes: Create the arguments object and function parameters
+	No…
+Function or global environment?
+	Yes: Register function declarations outside other functions
+	No…
+Block Environment?
+	Yes: Register variables with let and const in the current block
+	No: Register variables with var outside functions, and variables with let, const, outside blocks.
+
+Now we’ll go through the implications of these rules. You’ll see some common JS conundrums that can lead to weird bugs that are easy to create but tricky to understand.
+
+CALLING FUNCTIONS BEFORE THEIR DECLARATIONS:
+
+One of the features that make JS pleasant to use is that the order of function definitions doesn’t matter. 
+
+In JS we can call a function even before it’s formally declared. But not function expressions.
+We can access the function before it’s function declaration is reached because function declarations are created and their identifiers registered when the current lexical environment is created, BEFORE any JS code is executed.
+
+OVERRIDING FUNCTIONS:
+
+The next conundrum to tackle is the problem of overriding function identifiers.
+
+			assert(typeof fun === “function”, “We access the function”);
+			// ^^ fun refers to a function
+
+			var fun = 3; 
+			// ^^ defines a variable fun and assigns a number to it
+
+			assert(typeof fun === “number”, “We can access the number”);
+
+			function fun(){}
+
+			assert (typeof fun === “number”, “Still a number”);
+			// ^^ fun still refers to a number
+
+Here, a variable declaration and a function declaration have the same name: fun. If you run this code, you’ll see that both asserts pass. In the first assert, the identifier fun refers to a function; and in the second and third, fun refers to a number.
+
+… this follows as a direct consequence of the steps taken when registering identifiers. In the second step of the outlined process, functions defined with function declarations are created and associated to their identifiers before any code is evaluated;
+
+Functions defined with function declarations are created and associated to their identifiers before any code is evaluated; in the third step, variable declarations are processed, and the value undefined is associated to identifiers that haven’t yet been encountered in the second step when function declarations are registered, the value undefined isn’t assigned to the variable fun.
+
+During the actual program execution, function declarations are skipped, so the definition of the fun function doesn’t have any impact on the value of the fun identifier.
+
+** Variable hoisting: Many blogs or books explaining identifier resolution will talk about hoisting as variable and function declarations being hoisted or lifted to the top of the function or global scope.
+
+As you’ve seen, that’s a simplistic view. Variables and function declarations are technically not moved anywhere. They’re visited and registered in lexical environments before any code is executed.
