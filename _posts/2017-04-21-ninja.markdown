@@ -1,0 +1,171 @@
+---
+layout: post
+title:  "JS Ninja: ES6 Generators and Promises Intro"
+date:   2017-04-21 12:00:01-0400
+---
+Generators are a special type of function. Whereas a standard function produces at most a single value while running its code from start to finish, generators produce multiple values, on a per request basis, while suspending their execution between these requests. Although new in JS, generators have existed for quite some time in Python, PHP and C#.
+
+You’ll see who to use generators to simplify convoluted loops and how to take advantage of generators’ capability to suspend and resume their execution which can help you write simple and more elegant asynchronous code.
+
+PROMISES:
+
+Promises are a new built-in type of object that help you work with asynchronous code. A promise is a placeholder for a value that we don’t have yet but will at some later point. They’re especially good for working with multiple asynchronous steps.
+
+MAKING OUR ASYNC CODE ELEGANT WITH GENERATORS AND PROMISES:
+
+Here’s an example of how one might try to implement functionality of retrieving data from a remote server about ninjas and their missions:
+
+			try {
+				var ninjas = syncGetJSON(“ninjas.json”);
+				var missions = syncGetJSON(ninjas[0].missionsUrl);
+				var missionDetails = syncGetJSON(missions[0].detailsUrl);
+			} catch (e){
+				//Oh no, we weren’t about to get the mission details
+			}
+
+This code is relatively easy to understand, and if an error occurs in any of the steps, we can easily catch it in the catch block. 
+
+But unfortunately, this code has a big problem. Getting data from a server is a long-running operation, and because JS relies on a single-threaded execution model, we’ve just blocked our UI until the long-running operations finish. This leads to unresponsive applications and disappointed users. To solve this problem, we can rewrite it with callbacks, which will be invoked when a task finishes, without blocking the UI:
+
+			getJSON(“ninjas.json”, function(err, ninjas){
+				if (err) {
+					console.log(“Error fetching list of ninjas”, err);
+					return;
+				}
+				getJSON(ninjas[0].missionsUrl, function(err, missions){
+					if (err){
+						console.log(“Error locating ninja missions”, err);
+						return;
+					}
+				getJSON(missions[0].detailsUrl, function(err, missionDetails){
+					if (err){
+						console.log(“Error locating mission details”, err);
+						return;
+					}
+					//Study the intel plan	
+					});
+				});
+			});
+
+// Although this code will be much better received by our users, you’ll probably agree that it’s messy, it adds a lot of boilerplate error-handling code, and it’s plain ugly. This is where generators and promises jump in. By combining them, we can turn the non-blocking but awkward callback code into something much more elegant:
+
+			async(function*(){		
+			// ^^ a generator function is defined by putting an asterisk right after the function keyword. We can use the new yield keyword in generator functions
+
+				try {
+					//Below: the promises are hidden within the getJSON method:
+
+					const ninjas = yield getJSON(“ninjas.json”);
+					const missions = yield getJSON(ninjas[0].missionsUrl);
+					const missionDescription = yield getJSON(missions[0].detailsUrl);
+					
+					//Study the mission details
+				} catch (e) {
+					// Oh no, we weren’t able to get the mission details
+				}
+			});
+
+WORKING WITH GENERATOR FUNCTIONS:
+
+Generators are a completely new type of function and are significantly different from standard run of the mill functions. 
+
+A generator is a function that generates a sequences of values, but not all at once, as a standard function would, but on a per request basis.
+
+We have to explicitly ask the generator for a new value, and the generator will either respond with a value or notify us that it has no more values to produce. 
+
+What’s even more curious is that after a value is produced, a generator function doesn’t end it’s execution, as a normal function would… Instead a generator is merely suspended. Then when a request for another value comes along, the generator resumes where it left off. 
+
+SIMPLE Example of USING A GENERATOR FUNCTION TO GENERATE A SEQUENCE OF VALUES:
+
+			function* WeaponGenerator(){
+			//^^ Defines a generator function by putting * after the function keyword
+
+				yield “Katana”;
+				yield “Wakizashi”;
+				yield “Kusarigama”;
+
+			// ^^ Generates individual values by using the new yield keyword
+			}
+
+			for (let weapon of WeaponGenerator()){
+				assert (weapon !== undefined, weapon);
+			}
+			// ^^ Consumes the generated sequence with the new for-of loop
+
+On the right side of the for-of loop, we’ve placed the result of invoking our generator.
+
+If you take a closer look at the body of the WeaponGenerator function, you’ll see that there’s no return statement. What’s up with that?
+
+-Generators are quite unlike standard functions. For starters, calling a generator doesn’t execute the generator function; instead it creates an object called an iterator…
+
+CONTROLLING THE GENERATOR THROUGH THE ITERATOR OBJECT
+
+Making a call to a generator doesn’t mean that the body of the generator function will be executed.
+Instead an iterator object is created, an object through which we can communicate with the generator.
+
+For example, we can use the iterator to request additional values. Here’s our previous example, adjusted to explore how the iterator object works:
+
+			function* WeaponGenerator(){
+				yield “Katana”;
+				yield “Wakizashi”;
+			}
+
+			//^^ Defines a generator that will produce a sequence of two weapons
+
+			const weaponsIterator = WeaponGenerator();
+
+			// ^^ Calling a generator creates an iterator 
+			// through which we control the generator’s execution
+
+			const result1 = weaponsIterator.next();
+
+			//^ Calling the iterator’s next method requests a new value from the generator.
+
+			assert( typeof result1 === “object”
+				&& result1.value === “Katana”
+				&& !result1.done,
+				“Katana received”);
+
+			//^^ The result is an object with a returned value and an indicator that tells us whether the generator has more values
+
+			const result2 = weaponsIterator.next();
+			assert (typeof result2 === “object”
+				&& result2.value === “Wakizashi”
+				&& !result2.done,
+				“Wakizashi received!”);
+
+			// ^^ calling next again gets another value from the generator
+
+			const result3 = weaponsIterator.next();
+			assert (typeof result3 === “object”
+				&& result.value === undefined
+				&& result3.done,
+				“There are no more results”)
+
+			// ^^ When there’s no more code to execute, the generator returns “undefined” and indicates that it’s done
+
+** As you can see, when we call a generator, a new iterator is created:
+
+const weaponsIterator = WeaponsGenerator();
+
+The iterator is used to control the execution of the generator. One of the fundamental things that the iterator object exposes is the next method, which we can use to control the generator by requesting a value from it:
+
+const result1 = weaponsIterator.next();
+
+As a response to that call, the generator executes its code until it reaches a yield keyword that produces an intermediary result (one item in the generated sequence of items), and returns a new object that encapsulates that result and tells us whether its work is done.
+
+As soon as the current value is produced, the generator suspends its execution without blocking and patiently waits for another value request. This is an incredibly powerful feature that standard function don’t have, a feature that we’ll use later to great effect.
+
+1st call to iterator’s next method: 
+	1. executes the generator code to the first yield expression
+	2. yields “Katana”
+	3. returns an object with the property value set to Katana
+	4. the property done set to false, signaling that there are more values to produce.
+
+Later we request another value from the generator, by making another call to the weaponIterator’s next method: 
+
+const result2 = weaponsIterator.next();
+
+This wakes up the generator from suspension, and the generator continues from where it left off, executing its code until another intermediary value is reached: yield: “Wakizashi”. This suspends the generator and produces an object carrying Wakizashi.
+
+When we call the next method for the third time, the generator resumes its execution. But this time there’s no more code to execute, so the generator returns an object with value set to undefined, and done set to true, signaling that it’s done with its work.
