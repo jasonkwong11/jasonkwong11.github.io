@@ -1,0 +1,158 @@
+---
+layout: post
+title:  "JS Ninja: Closures as Private Variables"
+date:   2017-04-14 12:00:01-0400
+---
+Closures are a mechanism that allows a function to access all variables that are in scope when the function itself is created. Closures also allow us to mimic private object variables or make our code more elegant when dealing with callbacks.
+
+Closures are irrevocably tightly coupled with scopes. Closures are a straightforward side effect of the way scoping rules work in JS. So in this section we’ll revisit the closure examples from earlier, but this time you’ll take advantage of execution contexts and lexical environments that will enable you to grasp how closures work under the hood.
+
+REVISITING MIMICKING PRIVATE VARIABLES WITH CLOSURES:
+
+Now that you have a solid understanding of how scoping rules work in JS, let’s revisit the private variables example. This time we’ll focus on execution contexts and lexical environments:
+
+		function Ninja() {
+			var feints = 0;
+
+			// ^^ declares a variable inside the constructor. Because the scope of the variable is limited to inside the constructor, it’s a “private” variable.	
+
+			this.getFeints = function(){
+				return feints;
+			};
+
+			// ^^ an accessor method for the feints counter
+			
+			this.feint = function(){
+				feints ++;
+			};
+
+			// ^^ the increment method for the value. Because the value is private, no one can screw it up behind our backs; they’re limited to the access that we give them via methods.
+		}
+
+		var ninja1 = new Ninja();
+		assert (ninja1.feints === undefined,
+			“And the private data is inaccessible to us”);
+
+		//^^ verifies that can’t get at the variable directly
+
+		ninja1.feint();
+		assert(ninja1.getFeints() === 1,
+			“We’re able to access the internal feint count.”);
+
+		// ^^ Calls the feint method, which increments the count of the number of times that our ninja has feinted and tests that the increment was performed
+
+		var ninja2 = new Ninja();
+		assert(ninja2.getFeints() === 0,
+			“The second ninja object gets its own feints variable.”);
+
+		// ^^ When we create a new ninja2 object with the Ninja constructor, the ninja2 object gets its own feints variable
+
+Private variables are realized as closures that are created by object methods defined in the constructor:
+
+1. When the keyword new is used, a new object is instantiated
+
+2. When the constructor function is entered, a new lexical environment is created. It keeps track of all local variables in this scope. In this case, it keeps a reference to the feints variable.
+
+3. During the execution of the constructor, two functions are created and assigned as properties of the newly created object (getFeints and feint). As with any function, these two functions keep a reference to the environment in which they were created (the Ninja environment).
+
+** Every time we invoke a constructor function, we create a new lexical environment, which keeps track of variables local to the constructor. In this example, a new Ninja environment that keeps track of the feints variable is created.
+
+** In addition, whenever a function is created, it keeps a reference to the lexical environment in which it was created (through an internal [[ Environment ]] property). In this case, within the Ninja constructor function, we create two new functions: getFeints and feint, which get a reference to the Ninja environment, because this is the environment in which they were created.
+
+The getFeints and feint functions are accessible through the this keyword, and assigned as methods to the ninja object.
+	… getFeints and feint will be accessible from outside the Ninja constructor function, which in turn leads to the fact that you’ve effectively created a closure around the feints variable.
+
+When you call ninja2.getFeints(), this causes the creation of a new execution context, a new getFeints execution context is created and pushed to the execution stack. 
+	… This also leads to the creation of a new getFeints lexical environment (used to keep track of variables defined in this function)
+	… the getFeints lexical environment, as its outer environment, gets the environment in which the getFeints function was created: the Ninja environment that was active when the ninja2 object was constructed
+
+As you might have figured out by now, these “private” variables aren’t private properties of the object, but variables kept alive by the object methods created in the constructor.
+
+PRIVATE VARIABLES CAVEAT:
+
+In JS, there’s nothing stopping us from assigning properties created on one object to another object. For example, we can easily rewrite the code from 5.11 into something like the following:
+
+		function Ninja ( ){
+			var feints = 0;
+			this.getFeints = function(){
+				return feints;
+			};
+
+			this.feint = function(){
+				feints++;
+			};
+		}
+
+		var ninja1 = new Ninja();
+		ninja1.feint();
+
+		var imposter = {};
+		imposter.getFeints = ninja1.getFeints;
+		// ^^ Makes the getFeints function of ninja1 accessible through the imposter
+
+		assert(imposter.getFeints() === 1, 
+			“The imposter has access to the feints variable!”);
+		//^^ verifies that we can access the supposedly private variable of ninja1
+
+This example illustrates that there aren’t any private object variables in JS, but that we can use closures created by object methods to have a “good enough” alternative. Still, even though this isn’t the real thing, lots of developers find this way of hiding information useful.
+
+REVISITING THE CLOSURES AND CALLBACKS EXAMPLE:
+
+			<script>
+				function animateIt(elementId) {
+					var elem = document.getElementById(elementId);
+					var tick = 0;
+					var timer = setInterval(function(){
+						if (tick < 100) {
+							elem.style.left = elem.style.top = tick + “px”;
+							tick++;
+						} else {
+							clearInterval(timer);
+							assert (tick === 100,
+								“Tick accessed via a closure”);
+							assert (elem, 
+								“Element also accessed via a closure”);
+							assert( timer, 
+								“Timer reference also obtained via a closure.”)
+						}
+					}, 10);
+				}
+				animateIt(“box1”);
+				animateIt(“box2”);
+			</script>
+
+As you saw earlier in the chapter, we use closures to simplify animating multi objects on our pages.
+But now we’ll consider lexical environments
+
+Every time we call the animateIt function, a new function lexical environment is created 1, 2, that keeps track of the set of variables important for the animation:
+	1. the elementId, elem, the element that’s being animated;
+	2. tick, the current number of ticks
+	3. timer, the ID of the timer doing the animation
+
+This environment will be kept alive as long as there’s at least one function that works with its variables through closures. 
+	… In this case, the browser will keep alive the setInterval callback until we call the clearInterval function.
+
+Later, when an interval expires, the browser calls the matching callback —and with it, through closures, come the variables defined when the callback was created.
+
+SUMMARY OF EXPLORING HOW CLOSURES WORK:
+
+(this is regarding the animateIt example above)
+
+1. A function lexical environment is created on the first animateIt call (box1)
+2. A function lexical environment is created on the second animateIt call (box2)
+3. A callback function is executed and the states in the environment changes.
+	…Then the setInterval registered on the animateIt(“box1”) expires.
+4. Set as interval callbacks, one for each call to the animateIt function
+	…the setInterval registered on the animateIt(“box2”) expires.
+5. The setInterval registered on the animateIt(“box1”) expires for the second time.
+	
+^^^ By creating multiple closures, we can do many things at once. Every time an interval expires, the callback function reactivates the environment that was active at the time of the callback creation. The closure of each callback automatically keeps track of its own set of variables
+
+A SHORT REVIEW: 
+REMEMBER LEXICAL ENVIRONMENTS === SCOPES
+
+Remember: var, let, and const keywords:
+- The var keyword defines a variable in the closest function or global scope (while ignoring blocks)
+- Let and const keywords define a variable in the closest scope (including blocks), allowing us to create block-scoped variables
+
+Closures are merely a side effect of JS scoping rules. A function can be called even when the scope in which it was created is long gone.
