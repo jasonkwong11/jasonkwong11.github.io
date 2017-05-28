@@ -1,0 +1,117 @@
+---
+layout: post
+title:  "JS Ninja: ES6 Generators: Iterators"
+date:   2017-04-28 12:00:01-0400
+---
+The iterator, created by calling a generator, exposes a next method through which we can request a new value from the generator. The next method returns an object that carries a value produced by the generator, as well as the information stored in the done property that tells us whether the generator has additional values to produce.
+
+Here’s how you iterate over a generator results with a while loop:
+
+		function* WeaponGenerator() {
+			yield “Katana”;
+			yield “Wakizashi”;
+		}
+
+		const weaponsIterator = WeaponGenerator();
+		// ^^ Creates an iterator
+
+		let item;
+		// ^^ Creates a variable in which we’ll store items of the generated sequence
+
+		while (! (item = weaponsIterator.next()).done ) {
+			assert (item !== null, item.value);
+		}
+
+		// ^^ on each loop iteration, fetches one value from the generator and outputs its value. Stops iterating when the generator has no more values to produce
+
+
+That’s how the for-of loop from our first generator example, works. The for-of loop is syntactic sugar for iterating over iterators:
+
+		for (var item of WeaponsGenerator()){
+			assert (item !== null, item);
+		}
+
+//^^ Instead of manually calling the next method of the matching iterator and always checking whether we’re finished, we can use the for-of loop to do the exact same thing, only behind the scenes.
+
+YIELDING TO ANOTHER GENERATOR:
+
+Just as we often call one standard function from another standard function, in certain cases, we want to be able to delegate the execution of one generator to another.
+
+Here’s an example that generates both warriors and ninjas:
+
+		function* WarriorGenerator() {
+			yield “Sun Tzu”;
+			yield* NinjaGenerator();		// yield* delegates to another generator
+			yield “Genghis Khan”;
+		}
+
+		function* NinjaGenerator(){
+			yield “Hattori”;
+			yield “Yoshi”;
+		}
+
+		for (let warrior of WarriorGenerator()){
+			assert	(warrior !== null, warrior);
+		}
+
+If you run this code, you’ll see that the output is Sun Tzu, Hattori, Yoshi, Genghis Khan.
+
+By using the yield* operator on an iterator, we yield to another generator. In this example, from a WarriorGenerator we’re yielding to a new NinjaGenerator; all calls to the current WarriorGenerator iterator’s next method are rerouted to the NinjaGenerator.
+… This holds until the NinjaGenerator has no work left to do. 
+
+Notice that this is happening transparently to the code that calls the original generator. The for-of loop doesn’t care that the WarriorGenerator yields to another generator; it keeps calling next until it’s done.
+
+Next we’ll look at practical examples of generators and how delegating to another generator works.
+
+USING GENERATORS TO GENERATE IDS
+
+When creating certain objects, often we need to assign a unique ID to each object. The easiest way to do this is through a global counter variable, but thats ugly because the variable can be accidentally messed up from anywhere in our code.
+
+Another option is to use a generator:
+
+		function \*IdGenerator(){		
+			// Defines an IdGenerator generator function
+			let id = 0;
+			
+			// ^^ a variable that keeps track of IDs. This variable can’t be modified from outside our generator.
+			// below: a loop that generates an infinite sequence of IDs	
+
+			while (true) {
+				yield ++id;
+			}
+		}
+
+		const idIterator = IdGenerator();
+		// ^^ An iterator through which we’ll request IDs from the generator
+
+		const ninja1 = { id: idIterator.next().value };
+		const ninja2 = { id: idIterator.next().value };
+		const ninja3 = { id: idIterator.next().value };
+
+		//^^ Request three new IDs
+
+		assert (ninja1.id === 1, “First ninja has id 1”);
+		assert (ninja2.id === 2, “Second ninja has id 2”);
+		assert (ninja3.id === 3, “Third ninja has id 3”);
+
+		//^^ Tests that all went OK
+
+		This example starts with a generator that has one local variable, id, which represents our ID counter. The id variable is local to our generator; there’s no fear that someone will accidentally modify it from somewhere else in the code.
+		… this is followed by an infinite while loop, which at each iteration yields a new id value and suspends its execution until a request for another ID comes along:
+
+		function \*IdGenerator(){
+			let id = 0;
+			while(true){
+				yield ++id;
+			}
+		}
+
+** NOTE: Writing infinite loops isn’t something that we generally want to do in a standard function. But with generators, everything is fine! Whenever the generator encounters a yield statement, the generator execution is suspended until the next method is called again.
+
+After defining the generator, we create the iterator object:
+
+		const idIterator = IdGenerator();
+
+^^ This allows us to control the generator with calls to the idIterator.next() method. This executes the generator until a yield is encountered, returning a new ID value that we can use for our objects:
+
+		const ninja1 = { id: idIterator.next().value };
