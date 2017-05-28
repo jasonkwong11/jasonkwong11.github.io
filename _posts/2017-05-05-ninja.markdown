@@ -1,0 +1,179 @@
+---
+layout: post
+title:  "JS Ninja: Traversing the DOM with Generators + Generator Communication"
+date:   2017-05-05 12:00:01-0400
+---
+The DOM, a tree-like structure of HTML nodes, in which every node, except the root one, has exactly one parent, and can have zero or more children.
+
+Because the DOM is such fundamental structure in web dev, a lot of our code is based around traversing it. One relatively easy way to do this is by implementing a recursive function that will be executed for each visited node:
+
+		<div id=“subTree”>
+			<form>
+				<input type=“text” />
+			</form>
+			<p>Paragraph</p>
+			<span>Span</span>
+		</div>
+
+		<script>
+			function traverseDOM(element, callback){
+				callback(element);	// Processes the current node with a callback
+				element = element.firstElementChild;
+
+				//below: while loop traverses the DOM of each child element
+
+				while (element) {
+					traverseDOM(element, callback);
+					element = element.nextElementSibling;
+				}
+			}
+			
+			// below: starts the whole process by calling
+			// the traverseDOM function for our root element
+			
+			const subTree = document.getElementById(“subTree”);
+			traverseDOM(subTree, function(element) {
+				assert(element !== null, element.nodeName);
+			});
+		</script>
+
+In this example, we use a recursive function to traverse all descendants of the element with id subtree, in the process logging each type of node that we visit. In this case, the code outputs, DIV, FORM, INPUT, P, and SPAN.
+
+// ^^ This is the old way to do this. 
+
+Now that we have generators, we can do it differently:
+
+		function* DomTraversal(element){
+			yield element;
+			element = element.firstElementChild;
+			
+			while (element) {
+				yield* DomTraversal(element);
+
+				//^^ uses yield* to transfer the iteration control to another 
+				// instance of the DomTraversal generator
+
+				element = element.nextElementSibling;
+			}
+		}
+
+		const subTree = document.getElementById(“subTree”);
+
+		for (let element of DomTraversal(subTree)) {
+			assert(element !== null, element.nodeName);
+		}
+
+		//^^ iterates over the nodes by using the for-of loop
+
+This listing shows that we can achieve DOM traversals with generators, just as easily as with standard recursion, but with the additional benefit of not having to use the slightly awkward syntax of callbacks.
+
+Instead of processing the subtree of each visited node by recursing another level, we create one generator function for each visited node and yield to it. 
+… enables us to write conceptually recursive code in iterable fashion.
+… the benefit is that we can consume the generated sequence of nodes with a simple for-of loop, without resorting to nasty callbacks.
+
+This is a good example because it shows how to use generators in order 
+to separate the code that’s producing values (in this case, HTML nodes) 
+from the code that’s consuming the sequence of generated values (the for-of loop that logs the visited nodes), without having to resort to callbacks.
+	
+Now we’ll go back to a slightly more theoretical topic and see how to exchange data
+with a running generator.
+
+COMMUNICATING WITH A GENERATOR
+
+So far, we’ve seen how to return multiple values from a generator using yield expressions.
+
+But generators are even more powerful! 
+
+We can also send data to a generator, thereby achieving two-way communication!
+
+BIG PICTURE:
+With a generator:
+	1. We can produce an intermediary result
+	2. Use that result to calculate something else from outside the generator
+	3. Then, whenever we’re ready, send completely new data back to the generator and resume its execution
+
+SENDING VALUES AS GENERATOR FUNCTION ARGUMENTS:
+
+The easiest way to send data to a generator is by treating it like any other function using function call arguments
+
+For example: 
+Sending Data to and Receiving Data from a Generator:
+
+		function* NinjaGenerator(action) {
+			// ^^ A generator can receive standard arguments, like any other function
+
+			const imposter = yield (“Hattori ” + action);
+
+			// ^^ The magic happens… by yielding a value, the generator returns an 
+			// intermediary calculation. By calling the iterator’s next method with an 
+			// argument, we send data back to the generator.
+
+			assert(imposter === “Hanzo”,
+				“The generator has been infiltrated”);
+
+			//^^ The value sent over next becomes the value of the yielded expression
+			// So our imposter is Hanzo.
+
+			yield(“Yoshi (“ + imposter + ”) ” + action);
+
+			//^^ Triggers the execution of the generator and checks that we get 
+			// the correct value
+		}
+
+		const ninjaIterator = NinjaGenerator(“skulk”);
+		// ^^ Normal argument passing
+
+		const result1 = ninjaIterator.next();
+		assert (result1.value === “Hattori skulk”, “Hattori is skulking”);
+
+		//below: sends data to the generator as an argument to the next method and 
+		//checks whether the value was correctly transferred
+
+		const result2 = ninjaIterator.next(“Hanzo”);
+		assert(result2.value === “Yoshi (Hanzo) skulk”,
+			“We have an imposter!”);
+
+A function receiving data is nothing special, plain old functions do it all the time. But generators have the amazing power of being suspended and resumed. 
+… Unlike standard functions, generators can even receive data after their execution has started, whenever we resume them by requesting the next value.
+
+USING THE NEXT METHOD TO SEND VALUE INTO A GENERATOR:
+
+In addition to providing data when first invoking the generator, we can send data into a generator by passing arguments to the next method.
+
+In the process, we wake up the generator from suspension and resume its execution. This passed-in value is used by the generator as the value of the whole yield expression, in which the generator was currently suspended.
+
+On the second call to the ninjaIterator’s next method: ninjaIterator.next(“Hanzo”). This time, we’re using the next method to pass data back to the generator. Our generator function is patiently waiting, suspended at the expression yield (“Hattori ” + action), so the value Hanzo, passed as the argument to next(), is used as the value of the whole yield expression.
+	… In our case, this means that the variable imposter in imposter = yield (“Hattori ” + action) will end up with the value Hanzo.
+
+Summary:
+
+1. First call stores “Hattori skulk” in to result1.
+2. The second call sends “Hanzo” into the generator.
+3. “Hanzo” is set as the value of the yield expression, so imposter has the value “Hanzo”.
+
+** Note the next method supplies the value to the waiting yield expression, so if there’s no yield expression waiting, there’s nothing to supply the value to.
+	... For this reason, we can’t supply values over the first call to the next method. 
+	… If you need to supply an initial value to the generator, you can do so when calling the generator itself, as we did with NinjaGenerator(“skulk”)
+
+THROWING EXCEPTIONS:
+
+Another slightly less orthodox way to supply a value to a generator: throwing an exception.
+
+Each iterator, in addition to having a next method, has a throw method that we can use to throw an exception back to the generator.
+
+		function* NinjaGenerator(){
+			try{
+				yield “Hattori”;
+				fail (“The expected exception didn’t occur”);	//This fail shouldn’t be reached.
+			}
+			catch(e){
+				assert(e === “Catch this!”, “Aha! We caught an exception”);
+			}
+		}
+
+		const ninjaIterator = NinjaGenerator();
+
+		const result1 = ninjaIterator.next();
+		assert( result1.value === “Hattori”, “We got Hattori”);		//Pulls one value from the generator
+
+		ninjaIterator.throw(“Catch this!”)		// Throws an exception to the generator
