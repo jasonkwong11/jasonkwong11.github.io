@@ -1,0 +1,56 @@
+---
+layout: post
+title:  "JS Ninja: How Generators Work under the Hood"
+date:   2017-05-12 12:00:01-0400
+---
+Calling a generator doesn’t execute it. Instead, it creates a new iterator that we can use to request values from the generator. After a generator produces or yields a value, it suspends its execution and waits for the next request…
+	… so in a way, a generator works almost like a small program. a state machine that moves between states:
+
+1. Suspended start — when the generator is created, it starts in this state. None of the generator’s code is executed.
+
+2. Executing — The state in which the code of the generator is executed. 
+	… The execution continues either from the beginning or from where the generator was last suspended. 
+	… A generator moves to this state when the matching iterator’s next method is called, and there exists code to be executed
+
+3. Suspended yield — During execution, when a generator reaches a yield expression, it creates a new object carrying the return value, yields it, and suspends its execution. 
+	… this is the state in which the generator is paused and is waiting to continue its execution
+
+4. Completed — If during execution the generator either runs into a return statement or runs out of code to execute, the generator moves into this state.
+
+Now let’s supplement this on an even deeper level, by seeing who the execution of generators is tracked with execution contexts:
+
+Here’s our generator:
+
+		function* NinjaGenerator () {
+			yield “Hattori”;
+			yield “Yoshi”;
+		}
+
+1. const ninjaIterator = NinjaGenerator();
+
+Create a new generator in the Suspended start state.
+
+2. const result1 = ninjaIterator.next();
+
+Activate generator. 
+Move from Suspended start to Executing. Execute up to yield “Hattori” and pause.
+Move to Suspended yield state.
+Return a new object: { value: “Hattori”, done: false}
+
+3. const result2 = ninjaIterator.next();
+
+Reactivate generator. 
+Move from Suspended Yield to Executing.
+Execute up to yield “Yoshi” and pause.
+Move to the Suspended yield state.
+Return a new object: {value: “Yoshi”, done: false}
+
+4. const result3 = ninjaIterator.next();
+
+Reactivate generator. 
+Move from Suspended yield to Executing.
+No more code to execute.
+Move to the Completed state. 
+Return a new object: {value: undefined, done: true}
+
+During execution, a generator moves between states triggered by calls to the matching iterator’s next method.
