@@ -1,0 +1,66 @@
+---
+layout: post
+title:  "JS Ninja: Tracking Generators with Execution Contexts"
+date:   2017-05-19 12:00:01-0400
+---
+Let’s explore the relationship between generators and execution contexts. We’ll start with a simple code fragment:
+
+		function* NinjaGenerator(action) {
+			yield “Hattori ” + action;
+			return “Yoshi ” + action;
+		}
+
+		const ninjaIterator = NinjaGenerator(“skulk”);
+		const result1 = ninjaIterator.next();
+		const result2 = ninjaIterator.next();
+
+This produces two values: “Hattori skulk” and “Yoshi skulk”.
+
+Now we’ll explore the state of the application, the execution context stack at various points in the application execution. 
+
+1. Before calling the NinjaGenerator function
+	- because we’re executing global code, the execution context stack contains only the global execution context, which references the global environment in which our identifiers are kept.
+	- only the NinjaGenerator identifier references a function, while the values of all other identifiers are undefined.
+
+2. When we make the call to the NinjaGenerator function:
+
+const ninjaIterator = NinjaGenerator(“skulk”);
+
+	- the control flow enters the generator and, as it happens when we enter any other function, a new NinjaGenerator execution context item is created (alongside the matching lexical environment) and pushed onto the stack.
+An interesting thing happens when the program execution leaves the generator…
+	…Typically when program execution returns from a standard function, the matching execution context is popped from the stack and completely discarded.
+	=> But this isn’t the case with generators.
+	
+The matching NinjaGenerator stack item is popped from the stack, but it’s not discarded, because the ninjaIterator keeps a reference to it. 
+	… You can see it as an analogue to closures.
+	… In closures, we need to keep alive the variables that are alive at the moment a function closure is created, so our functions keep a reference to the environment in which they were created.
+	… Generators, on the other hand, have to be able to resume their execution.
+	.. Because the execution of all functions is handled by execution contexts, the iterator keeps a reference to its execution context, so that it’s alive for as long as the iterator needs it.
+
+Another interesting thing happens when we call the next method on the iterator:
+
+const result1 = ninjaIterator.next();
+
+If this were a standard straightforward function call, this would cause the creation of a new next() execution context time, which would be placed on the stack. But as you might have noticed, generators aren’t standard.
+
+It reactivates the matching execution context, in this case, the NinjaGenerator context, and places it on top of the stack, continuing the execution where it left off.
+
+Difference between generators and standard functions:
+
+Standard functions can only be called anew, and each call creates a new execution context.
+
+Generators’ execution contexts can be temporarily suspended and resumed at will.
+
+When the generator function reaches this line: yield “Hattori ” + action, the generator determines that the expression equals “Hattori skulk” and the evaluation reaches the yield keyword. This means that Hattori skulk is the first intermediary result of our generator and that we want to suspend the execution of the generator and return that value.
+
+Application state: a similar thing happens as before: the NinjaGenerator context is taken off the stack, but it’s not completely discarded, because ninjaIterator keeps a reference to it.
+
+The generator is now suspended and has moved to the Suspended Yield state, without blocking.
+The program execution resumes to global code, by storing the yielded value to result1.
+
+The code continues by reaching another iterator call:
+
+const result2 = ninjaIterator.next();
+
+At this point, we go through the whole procedure once again: we reactivate the NinjaGenerator context referenced by ninjaIterator, push it to onto the stack, and continue the execution where we left off. In this case, the generator evaluates the expression “Yoshi ” + action. But this time, there’s no yield expression, and instead the program encounters a return statement.
+ 	… The return statement returns the value Yoshi skulk and completes the generator’s execution by moving the generator into the Completed state.
