@@ -26,7 +26,7 @@ Now we’ll explore the state of the application, the execution context stack at
 
 const ninjaIterator = NinjaGenerator(“skulk”);
 
-	- the control flow enters the generator and, as it happens when we enter any other function, a new NinjaGenerator execution context item is created (alongside the matching lexical environment) and pushed onto the stack.
+The control flow enters the generator and, as it happens when we enter any other function, a new NinjaGenerator execution context item is created (alongside the matching lexical environment) and pushed onto the stack.
 An interesting thing happens when the program execution leaves the generator…
 	…Typically when program execution returns from a standard function, the matching execution context is popped from the stack and completely discarded.
 	=> But this isn’t the case with generators.
