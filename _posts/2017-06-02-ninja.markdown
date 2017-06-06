@@ -1,0 +1,71 @@
+---
+layout: post
+title:  "JS Ninja: Promises II"
+date:   2017-06-02 12:00:01-0400
+---
+We use asynchronous code because we don’t want to block the execution of our application (thereby disappoint our users) while long-running tasks are executing.
+  … Currently, we solve this problem with callbacks
+
+For example: fetching a JSON file from a server is a long-running task, during which we don’t want to make the application unresponsive for our users.
+
+Therefore we provide a callback that will be invoked when the task is done:
+
+    getJSON(“data/ninjas.json”, function() {
+      /* Handle results */
+    })
+
+Naturally, during this long-running task, errors can happen. And the problem with callbacks is that you can’t use use built-in language constructs, such as try-catch statements.
+
+    try {
+      getJSON(“data/ninjas.json”, function() {
+        /* Handle results */
+      });
+    } catch(e) {/* Handle errors*/}
+
+
+As a consequence, errors usually get lost. Many libraries, therefore, define their own conventions for reporting errors. 
+
+For example, in the Node.js world, callbacks customarily take two arguments, err and data, where err will be a non-null value if an error occurs somewhere along the way
+
+This is the first problem with callbacks: difficult error handling
+
+After we’ve performed a long-running task, we often want to do something with the obtained data.
+
+This can lead to starting another long-running task, which can eventually trigger yet another long-running task, and so on— leading to a series of interdependent, asynchronous, callback-processed steps.
+
+For example, if we wanted to execute a sneaky plan to find al ninjas at our disposal, get the location of the first ninja, and send him orders, we’d end up with something like this:
+
+    getJSON(“data/ninjas.json”, function(err, ninjas){
+      getJSON(ninjas[0].location, function(err, locationInfo){
+        sendOrder(location, function(err, status){
+          /* Process status*/
+        })
+      })
+    })
+
+You might notice that this code is difficult to understand, inserting new steps is a pain, and error handling complicates your code significantly. You get this “pyramid of doom” that keeps growing and is difficult to manage
+
+Sometimes the steps that we have to go through to get to the final result don’t depend on each other, so we don’t have to make them in sequence. Instead to save precious milliseconds, we can do them in parallel. For example, if we want to set a plan in motion that requires us to know which ninjas we have at our disposal, the plan itself and the location where our plan will play out, we could take advantage of jQuery’s get method and write something like this:
+
+    var ninjas, mapInfo, plan;
+
+    $.get(“data/ninjas.json”, function(err, data){
+      if(err){ processError(err); return; }
+      ninjas = data;
+      actionItemArrived();
+    });
+
+
+    $.get(“data/mapInfo.json”, function(err, data){
+      if (err) { processError(err); return; }
+      mapInfo = data;
+      actionItemArrived();
+    })
+
+… for plan and a function for when the actionItemArrives
+
+In this code ^^, we execute the actions of getting the ninjas, getting the map info, and getting the plan in parallel, because these actions don’t depend on each other. We only care that in the end, we have all the data at our disposal. Because we don’t know the order in which the data is receiveed, every time we get some data, we have to check whether it’s the last piece of the puzzle that we’re missing. Finally when all pieces are in place, we can set our plan in motion. Notice that we have to write al lot of boilerplate code just to do something as common as executing a number of actions in parallel.
+
+… This is the 3rd problem with callbacks: performing a number of steps in parallel is also tricky.
+
+If you want to perform asynchronous actions for each item in a collection, you have to jump through some more hoops to get it done.
