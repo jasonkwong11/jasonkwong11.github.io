@@ -1,0 +1,132 @@
+---
+layout: post
+title:  "JS Ninja: Promises III"
+date:   2017-06-08 12:00:01-0400
+---
+A promise is an object that serves as a placeholder for a result of an asynchronous task. It represents a value that we don’t have but hope to have in the future. For this reason, during its lifetime, a promise can go through a couple of states.
+
+1. A promise starts in the pending state, in which we know nothing about our promised value. That’s why a promise in the pending state is also called an unresolved promise.
+
+2. During program execution, if the promise’s resolve function is called, the promise moves into the fulfilled state, in which we’ve successfully obtained the promised value.
+  
+- On the other hand, if the promise’s reject function is called, or if an unhanded exception occurs during promise handling, the promise moves into the rejected state, in which we weren’t able to obtain the promised value, but in which we  at least know why.
+
+-Once a promise has reached either the fulfilled state or the rejected state, it can’t switch 
+… (a promise can’t go from fulfilled to rejected or vice versa), and it always stays in that state.
+… We say that a promise is resolved (either successfully or not)
+
+Here’s a closer look at promise order of execution:
+
+report(“At code start”);
+
+    var ninjaDelayedPromise = new Promise( (resolve, reject) => {
+      report(“ninjaDelayedPromise executor”);
+
+      //^^ Calling the Promise constructor immediately invokes the passed-in function
+      // below: We’ll resolve this promise as successfully after a 500ms timeout expires
+
+      setTimeout(() => {
+        report(“Resolving ninjaDelayedPromise”);
+        resolve(“Hattori”);
+      }, 500);
+    });
+
+    assert(ninjaDelayedPromise !== null, “After creating ninjaDelayedPromise”);
+
+    ninjaDelayedPromise.then(ninja => {
+      assert(ninja === “Hattori”,
+        “ninjaDelayedPromise resolve handled with Hattori”);
+    });
+
+//^^ The Promise then method is used to set up a callback that will be called when the promise resolves, in our case when the timeout expires
+
+This callback will always be called asynchronously, regardless of the current state of the promise
+
+    const ninjaImmediatePromise = new Promise ((resolve, reject) => {
+      report(“ninjaImmediatePromise executor. Immediate resolve.”);
+      resolve(“Yoshi”);
+    });
+
+//^^ Creates a new promise that gets immediately resolved
+
+    ninjaImmediatePromise.then( ninja => {
+      assert(ninja === “Yoshi”,
+        “ninjaImmediatePromise resolve handled with Yoshi”)
+    })
+
+^^ Sets up a callback to be invoked when the promise resolves. But our promise is already resolved!!
+
+report(“At code end”);
+
+ninjaImmediatePromise is resolved immediately during its construction, by calling the resolve function. Unlike the ninjaDelayedPromise, which after construction is in the pending state, the ninjaImmediatePromise finishes construction in the resolved state, and the promise already has the value Yoshi
+
+Afterwards we use the ninjaImmediatePromise’s then method to register a callback that will be executed when the promise successfully resolves. But our promise is already settled; does this mean that the success callback will be immediately called or that it will be ignored?
+  … The answer is neither.
+
+=> Promises are designed to deal with asynchronous actions, so the JS engine always resorts to asynchronous handling, to make the promise behavior predictable.
+  … The engine does this by executing the then callbacks after all the code in the current step of the event loop is executed
+
+We’ll see that we first log “At code end” 
+  … AND THEN we log that the ninjaImmediatePromsie was resolved. 
+  … In the end after the 500ms timeout expires, the ninjaDelayedPromise is resolved, which causes the execution of the matching then callback.
+
+In this example, we’ve worked only with the rosy scenario in which everything goes great. But the real world isn’t all sunshine and rainbows, so let’s see how to deal with all sorts of crazy problems that occur.
+
+REJECTING PROMISES
+
+There are two ways of rejecting a promise:
+  1. Explicitly, by calling the passed-in reject method in the executor function of a promise, and
+  2. Implicitly, if during the handling of a promise, an unhandled exception occurs.
+
+Example of Explicitly Rejecting Promises:
+
+    const promise = new Promise((resolve, reject) => {
+      reject(“Explicitly reject a promise!”);
+    });
+
+^^ A promise can be explicitly rejected by calling the passed-in reject function
+
+    promise.then(() => fail(“Happy path, won’t be called!”),
+      error => pass(“A promise was explicitly rejected!”)
+    );
+
+^^ If a promise is rejected, the second, error, callback will always be invoked.
+
+We can explicitly reject a promise, by calling the passed-in reject method: reject(“Explicitly reject a promise!”)
+
+If a promise is rejected, when registering callbacks through the then method, the second, error, callback will always be invoked. 
+
+    var promise = new Promise ((resolve, reject) => {
+      reject(“Explicitly reject a promise!”);
+    });
+
+In addition, we can use an alternative syntax for handling promise rejections, by using the built-in catch method, as shown in the following listing:
+
+    var promise = new Promise ((resolve, reject) => {
+      reject(“Explicitly reject a promise!”);
+    });
+
+    promise.then( () => fail(“Happy path, won’t be called!”))
+      .catch(() => pass(“Promise was also rejected”));
+
+^^ Instead of supplying the second, error, callback, we can chain in the catch method and pass to it the error callback. The end result is the same.
+
+Use the chaining the catch method more often, because it is more useful.
+
+In addition to explicit rejection (via the reject call), a promise can also be rejected implicitly, if an exception occurs during its processing.
+
+For example:
+
+    const promise = new Promise ((resolve, reject) => {
+      undeclaredVariable++;
+      ^^ A promise is implicitly rejected if an unhanded exception occurs when processing the promise.
+    });
+
+    promise.then(() => fail(“Happy path, won’t be called!”))
+      .catch(error => pass(“Third promise was also rejected”));    // If an exception occurs, the second error, callback is invoked.
+
+^^ Within the body of the promise executor, we try to increment undeclaredVariable, a variable that isn’t defined in our program. As expected, this results in an exception
+  … Because there’s no try-catch statement within the body of the executor, this results in an implicit rejection of the current promise, and the catch callback is eventually invoked. In this situation, we could have just as easily supplied the second callback to the then method, and the end effect would b the same.
+
+** This way of treating all problems that happen while working with promises in a uniform way is extremely handy. Regardless of how the promise was rejected, whether explicitly or by calling the reject method or even implicitly, if an exception occurs, all errors and rejection reasons are directed to our rejection callback. 
+  … This make our
