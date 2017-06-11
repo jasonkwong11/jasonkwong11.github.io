@@ -1,0 +1,189 @@
+---
+layout: post
+title:  "JS Ninja: Promises IV"
+date:   2017-06-11 12:00:01-0400
+---
+One of the common asynchronous actions on the client is fetching data from the server. As such, this is an excellent case study on the use of promises. For the underlying implementation: we’ll use the built in XMLHttpRequest object.
+
+    function getJSON(url){
+      return new Promise ((resolve, reject) => {
+
+      //^^ Creates and returns a new promise
+
+        const request = new XHMLHttpRequest();
+        
+        //^^ Creates an XMLHttpRequest object
+        
+        request.open(“GET”, url);
+
+        //^^ Initializes the request
+
+        request.onload = function(){
+
+        //^^ Registers an onload handler that will be called if the server has responded
+
+          try {
+            if (this.status === 200) {
+
+            //^^ even if the server has responded, it doesn’t that everything went as expected. Use the result only if the server responds with status 200 (everything OK)
+
+              resolve(JSON.parse(this.response));
+
+              //^^ Try to parse the JSON string; if it succeeds, resolve the promise as successful with the parsed object
+      
+            } else {
+              reject(this.status + “ ” + this.statusText );
+            }
+          } catch (e) {
+            reject(e.message);
+          }
+          
+          // ^^ If the server responds with a different status code, or if there’s an exception parsing the JSON string, reject the promise
+        
+        };
+
+        request.onerror = function() {
+          reject (this.status + “ “ + this.statusText);
+        };
+        
+        //^^ If there’s an error while communicating with the server, reject the promise
+        
+        request.send();
+
+        //^^ Sends the request
+      
+      });
+    }
+
+    getJSON(“data/ninjas.json”).then( ninjas => {
+      assert(ninjas !== null, “Ninjas obtained!”);
+    }).catch( e => fail(“Shouldn’t be here:” + e));
+
+//^^ Uses the promise created by the getJSON function to register resolve and reject callbacks
+
+** Executing this example and all subsequent examples that reuse this function requires a running server. You can use npm’s http-server
+
+Our goal is to create a getJSON function that returns a promise that will enable us to register success and failure callbacks for asynchronously getting JSON-formatted data from the server. For the underlying implementation, we use the built-in XMLHttpRequest object that offers two events: onload and onerror. 
+
+1. The onload event is triggered when the browser receives a response from the server, 
+2. onerror is triggered when an error in communication happens. 
+
+These event handlers will be called asynchronously by the browser, as they occur.
+
+If an error in the communication happens, we definitely won’t be able to get our data from the server, so the honest thing to do is to reject our promise:
+
+    request.onerror = function ( ) {
+      reject( this.status + “ “ + this.statusText);
+    };
+
+If everything goes according to plan and we successfully obtain our objects, we can safely resolve the promise. Finally, we can use our getJSON function to fetch ninjas from the server.
+
+In this case, we have three potential sources of errors: 
+1. errors in establishing the communication between the server and client
+2. the server responding with unanticipated data(invalid response status)
+3. invalid JSON code
+
+From the perspective of the code that uses the getJSON function, we don’t care about the specifics of error sources, we only supply a callback that gets triggered if everything goes okay and the data is properly received, and a callback that gets triggered if any error occurs
+
+Now we’re going to take it up a notch and explore another big advantage of promises: their elegant composition. We’ll start by chaining several promises in a series of distinct steps:
+
+CHAINING PROMISES:
+
+You’ve already seen how handling a sequence of interdependent steps leads to the pyramid of doom. A deeply nested and difficult to maintain sequence of callbacks. Promises are a step toward solving that problem because they have the ability to be chained.
+
+Remember, by using the THEN method on a promise, we can register a callback that will be executed if a promise is successfully resolved.
+  … We didn’t tell you: calling the THEN method also returns a new promise!!
+  … So there’s nothing stopping us from chaining as many THEN methods as we want; see the following code:
+
+    getJSON(“data/ninjas.json”)
+      .then(ninjas => getJSON(ninjas[0].missionsUrl))
+      .then(missions => getJSON(missions[0].detailsUrl))
+      .then(mission => assert(mission !== null, “Ninja mission obtained!”))
+      
+      //^^ Specifies multiple sequential steps by chaining in then calls
+
+      .catch(error => fail(“An error has occurred”));
+      
+      //^^Catches promise rejections in any of the steps
+
+This creates a sequence of promises that will be, if everything goes to plan, resolved one after another:
+
+1. first we use the getJSON(“data/ninjas.json”) method to fetch a list of ninjas from the file on the server. 
+
+2. after, we receive that list, we take the information about the first ninja and we request a list of missions the ninja is assigned to:
+
+    getJSON(ninjas[0].missionsUrl)
+
+3. later, when we these missions come in, we make yet another request for the details of the first mission: 
+
+    getJSON(missions[0].detailsUrl)
+
+4. Finally we log the details of the mission
+
+Writing such code using standard callbacks would result in a deeply nested sequence of callbacks. Identifying the exact sequence of steps wouldn’t be easy, and God forbid we decide to add in an extra step in somewhere in the middle.
+
+CATCHING ERRORS IN CHAINED PROMISES:
+
+When dealing with sequences of asynchronous steps, an error can occur in any step.
+
+We already know that we can provide a second, error callback to the then call, or chain in a catch call that takes an error callback. When we care only about the success/failure of the entire sequence of steps, supplying each step with special error handling might be tedious. So we can take advantage of the catch method that you saw earlier:
+
+    catch(error => fail(“An error has occurred:” + err ));
+
+//^^ if a failure occurs in any of the previous promises, the catch method catches it. If no error occurs, the program flow continues through it unobstructed.
+
+Dealing with a sequence of steps is much nicer with promises than with regular callbacks. But it’s still not as elegant as it could be. We’ll get to that soon, but first lets see how to use promises to take care of parallel asynchronous steps.
+
+WAITING FOR A NUMBER OF PROMISES
+
+In addition to helping us deal with sequences of interdependent, asynchronous steps, promises significantly reduce the burden of waiting for several independent asynchronous tasks.
+
+Let’s revisit our example in which we want to, in parallel, gather information about the ninjas at our disposal, the intricacies of the plan, and the map of the location where the plan will be set in motion.
+
+With promises, this is as simple as shown in the following listing: 
+
+//below: the Promise.all method takes an array of promises, and creates a new promise that succeeds if all promises succeed, and fails if even one promise fails.
+
+    Promise.all([
+      getJSON(“data/ninjas.json”),
+      getJSON(“data/mapInfo.json”),
+      getJSON(“data/plan.json”)
+    ]).then(results => {
+
+      //below: the result is an array of succeed values, in the order of passed-in promises
+
+        const ninjas = results[0], mapInfo = results[1], plan = results[2];
+
+        assert(ninjas !== undefined && mapInfo !== undefined && plan !== undefined,
+          “The plan is ready to be set in motion!”);
+      }).catch( error => {
+        fail(“A problem in carrying out our plan!”);
+      });
+
+As you can see, we don’t have to care about the order in which tasks are executed, and whether some of them have finished while others didn’t. 
+
+We state that we want to wait for a number of promises by using the built-in Promise.all method. 
+  … This method takes an array of promises and creates a new promise that successfully resolves when all passed-in promises resolve, and rejects if even one of the promises fails.
+
+  … The succeed callback receives an array of succeed values, one for each of the passed-in promises, in order.
+
+Ah! The elegance of code that processes multiple parallel asynchronous tasks with promises!!
+
+RACING PROMISES
+
+Imagine we have a group of ninjas at our disposal, and we want to give an assignment to the first ninja who answers our call. When dealing with promises, we can write something like the following listing:
+
+    Promise.race([
+      getJSON(“data/yoshi.json”),
+      getJSON(“data/hattori.json”),
+      getJSON(“data/hanzo.json”)
+    ]).then( ninja => {
+      assert( ninja !== null, ninja.name + “ responded first”);
+    }).catch( error => fail(“Failure!”));
+
+It’s as simple as that. There’s no need for manually tracking everything. 
+
+We use the Promise.race method to take an array of promises and 
+  … return a completely new promise that resolves or rejects as soon as the first of the promises resolves or rejects.
+
+So far you’ve seen how promises work, how we can use them to greatly simplify dealing with a series of asynchronous steps, either in series or in parallel. Although the improvements, when compared to plain old callbacks in terms of error handling and code elegance are great, promisified code isn’t on the same level of elegance as simple synchronous code.
