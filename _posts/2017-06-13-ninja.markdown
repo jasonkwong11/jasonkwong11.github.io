@@ -1,0 +1,23 @@
+---
+layout: post
+title:  "JS Ninja: ES6 Async"
+date:   2017-06-13 12:00:01-0400
+---
+Notice that we still had to write some boilerplate code; we had to develop an async function that takes care of handling promises and requesting values from the generator.
+  … although we had to write this function only once, then reuse it throughout our code, it would be nicer if we didn’t have to think about it. The people in charge of JS are well aware of the usefulness of the combination of generators and promises.
+  … the current plan is to include two new keywords: async and await, that would take care of this boilerplate code:
+
+(async function() {
+  try {
+    const ninjas = await getJSON(“data/ninjas.json”); 
+    const missions = await getJSON(missions[0].missionsUrl);
+
+    console.log(missions);
+  }
+
+  catch(e){
+    console.log(“Error: ”, e);
+  }
+})()
+
+Jake Archibald describes this really well in his blog post. [Check it out](https://jakearchibald.com/2014/es7-async-functions/)
