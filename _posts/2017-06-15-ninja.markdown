@@ -1,0 +1,109 @@
+---
+layout: post
+title:  "JS Ninja: Object Instance Properties"
+date:   2017-06-15 12:00:01-0400
+---
+When a function is called as a constructor via the new operator, its context is defined as the new object instance. In addition to exposing properties via the prototype, we can initialize values within the constructor function via the this parameter.
+
+Example: Observing the precedence of initialization activities:
+
+    function Ninja(){
+      this.swung = false; //creates an instance variable that holds a Boolean value initialized to false
+
+      this.swingSword = function(){ 
+
+      //^^creates an instance method that returns the inverse of the swung instance variable value
+
+        return !this.swung;
+      }
+    }
+
+
+Below: defines a prototype method with the same name as the instance method. Which will take precedence?
+
+
+    Ninja.prototype.swingSword = function(){
+      return this.swung;
+    };
+
+//below: constructs a Ninja instance and asserts that the instance method will override the prototype method of the same name
+
+    const ninja = new Ninja();
+    assert(ninja.swingSword(),
+      “Called the instance method, not the prototype method.”);
+
+^^ The test passes, which shows that instance members will hide properties of the same name defined in the prototype
+
+Within the constructor function, the this keyword refers to the newly created object, so the properties added within the constructor are created directly on the new ninja instance.
+
+Later, when we access the swingSword property on ninja, there’s no need to traverse the prototype chain;
+  … the property created within the constructor is immediately found and returned.
+
+Every instance gets its own version of the properties created within the constructor
+  … but they all have access to the same prototype’s properties
+  .. this is ok for value properties (e.g. a boolean like swung) that are specific to each object instance. But in certain cases it might be problematic for methods
+  => in this example, we’d have 3 versions of the swingSword method that all perform the same logic. This isn’t a problem if we create a couple of objects, but it’s something to pay attention to if we plan to create large numbers of objects
+  => Because each method copy behaves the same, creating multiple copies often doesn’t make sense, because it only consumes more memory.
+  ** ==> it makes sense to place object methods only on a function’s prototype because in that way we have a single method shared by all object instances.
+
+**Remember ch. 5 on closures: 
+  … methods defined within constructor functions allow us to mimic private object variables. If this is something we need, specifying methods within constructors is the only way to go.
+
+SIDE EFFECTS OF THE DYNAMIC NATURE OF JAVASCRIPT:
+
+You’ve already seen that JS is a dynamic language in which properties can be easily added, removed, and modified at will. The same thing holds for prototypes, both function prototypes and object prototypes.
+
+You can add a method to the object’s prototype after the object was created
+
+Even if you completely override the Ninja’s prototype via a new object, the previously created ninja object can still have the prototype’s methods (e.g.: swingSword) because it keeps a reference to the old Ninja prototype
+
+But newly created ninja objects reference the new prototype, so they can pierce but can’t swing
+
+***The reference between an object and the function’s prototype is established at the time of object instantiation. Newly created objects will have a reference to the new prototype and will have access to the pierce method, whereas the old pre-prototype-change objects keep their original prototype
+
+OBJECT TYPING VIA CONSTRUCTORS
+As you’ve seen 
+Although it’s great to know how JS uses the prototype to find the correct property references, it’s also handy to know which function constructed object instance.
+
+The constructor of an object is available via the constructor property of the constructor function prototype.
+
+By using the constructor property, we can access the function that was used to create the object. This information can be used as a form of type checking:
+
+    function Ninja(){}
+    const ninja = new Ninja();
+
+    assert( typeof ninja === “object”,
+      “The type of the instance is object.”);
+
+    assert( ninja instanceof Ninja,
+      “instance identifies the constructor.”);
+
+//^^ Tests the type of ninja via instanceof. This provides more information — that it was constructed from Ninja.
+
+    assert(ninja.constructor === Ninja,
+      “The ninja object was created by the Ninja function”)
+
+//^^ Tests the type of ninja via the constructor reference. This gives a reference to the constructor function.
+
+Because ninja.constructor is just a reference to the original constructor, we can instantiate a new Ninja object using it:
+
+    function Ninja(){}
+
+    const ninja = new Ninja();
+    const ninja2 = new ninja.constructor();
+
+//^^ Constructs a second Ninja from the first
+
+    assert (ninja2 instance of Ninja, “It’s a Ninja!”);
+
+//^^ Proves the new object’s Ninja-ness
+
+    assert (ninja !== ninja2, “But not the same Ninja”)
+
+//^^ They aren’t the same object but two distinct instances.
+
+***What’s especially interesting is that we can do this without even having access to the original function
+  … we can use the reference completely behind the scenes, even if the original constructor is no longer in scope.
+
+***NOTE: although the constructor property of an object can be changed, doing so doesn’t have any immediate or obvious constructive purpose (we might be able to think of some malicious ones)
+  … The property’s reason for being is to indicate from where the object was constructed. If the constructor property is overwritten, the original value is lost
