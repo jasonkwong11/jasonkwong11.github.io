@@ -1,0 +1,74 @@
+---
+layout: post
+title:  "JS Ninja: Object Prototypes"
+date:   2017-06-14 12:00:01-0400
+---
+Recap so far: Functions are first-class objects in JS. Closures make them incredibly versatile and useful. You can combine generator functions with promises to tackle the problem of async code.
+
+  …. Now we’re ready to tackle another important aspect of JS: object prototypes.
+
+A prototype is an object to which the search for a particular property can be delegated to. Prototypes are a convenient means of defining properties and functionality that will be automatically accessible to other objects.
+
+Prototypes serve a similar purpose to that of classes in classical OO languages. Indeed the main use of prototypes in JS is in producing code written in an OO way, similar to, but not exactly like code in more conventional, class based languages.
+
+In JS, inheritance is implemented with prototyping.
+
+The idea of prototyping is simple. Every object can have a reference to its prototype, an object to which the search for a particular property can be delegated to, if the object itself doesn’t have that property.
+
+    Object.setPrototypeOf(yoshi, hattori);
+
+by setting hattori as yoshi’s prototype, yoshi now has access to hattori’s properties.
+
+    Object.setPrototypeOf(hattori, kuma);
+
+Now hattori has access to kuma’s creep property… yoshi does too now, through hattori
+
+You can use the IN operator to test whether an object has access to a particular property. For example, executing skulk in yoshi returns true, because yoshi has access to the skulk property
+
+In JS, the object’s prototype property is an internal property that’s not directly accessible 
+  … so we mark it with [[ prototype ]]
+  … Instead the built-in method Object.setPrototypeOf takes in two object arguments and sets the second object as the prototype of the first. 
+  … for example, calling Object.setPrototypeof(yoshi, hattori); sets up hattori as the prototype of yoshi
+  … as a result, whenever we ask yoshi for a property that it doesn’t have, yoshi delegates that search to hattori. We can access hattori’s sneak property through yoshi.
+
+*** It’s important to emphasize that every object can have a prototype, and an object’s prototype can also have a prototype, and so on, forming a PROTOTYPE CHAIN.
+
+The search delegation for a particular property occurs up the whole chain, and it stops only when there are no more prototypes to explore:
+
+For example: asking yoshi for the value of the creep property triggers the search for the property first in yoshi. because its not found, yoshi’s prototype hattori is searched. again hattori doesn’t have a property named creep so hattori’s prototype, puma is searched and the property is finally found
+
+OBJECT CONSTRUCTION AND PROTOTYPES
+
+The new operator, applied to a constructor function, triggers the creation of a newly allocated object.
+
+What we didn’t learn in the previous chapters was that every function has a prototype object that’s automatically set as the prototype of the objects created with that function.
+
+Example:
+
+    function Ninja(){}    //defines a function that does nothing and returns nothing
+
+    //below: every function has a built-in prototype object, which we can freely modify
+
+    Ninja.prototype.swingSword = function(){
+      return true;
+    };
+
+    const ninja1 = Ninja();
+    assert(ninja1 === undefined,
+      “No instance of Ninja created.”);
+
+    //^^ Calls the function as a function. Testing confirms that nothing at all seems to happen.
+
+    const ninja2 = new Ninja();
+
+    //^^ Calls the function as a constructor. Testing confirms that not only is a new object instance created, but it possesses the method from the prototype of the function.
+
+Every function, when created, gets a new prototype object. When we use a function as a constructor, the constructed object’s prototype is set to the function’s prototype.
+
+*A function when created, gets a new object {}, that’s assigned to it’s prototype property. The prototype object initially has only one property: constructor.
+  … constructor references back to the function.
+
+*When we use a function as a constructor, for example, by calling new Ninja();, the prototype of the newly constructed object is set to the object referenced by the constructor function’s prototype.
+
+When we try to access the swingSword property on ninja2, the search for that property is delegated to the Ninja prototype object. Notice that all objects created with the Ninja constructor will have access to the swingSword method.
+  … the swingSword method is a property of the Ninja’s prototype and not a property of ninja instances.
