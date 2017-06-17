@@ -33,11 +33,11 @@ Apart from the fact that this approach isn’t working, we’d also need to copy
 WHAT WE REALLY WANT TO ACHIEVE IS A PROTOTYPE CHAIN SO THAT A NINJA CAN BE A PERSON AND A PERSON CAN BE A MAMMAL, AND A MAMMAL CAN BE AN ANIMAL, AND SO ON, ALL THE WAY TO OBJECT
   …. The best technique for creating such a prototype chain is to use an instance of an object as the other object’s prototype:
 
-SubClass.prototype = new SuperClass();
+        SubClass.prototype = new SuperClass();
 
-For Example:
+        For Example:
 
-Ninja.prototype = new Person();
+        Ninja.prototype = new Person();
 
 ^^ This preservers the prototype chain, because the prototype of the SubClass instance will be an instance of the SuperClass, which has a prototype with all the properties of Superclass, and which will in turn have a prototype pointing to an instance of its superclass, and on and on.
 
