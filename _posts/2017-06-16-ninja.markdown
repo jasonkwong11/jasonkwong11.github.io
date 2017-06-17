@@ -1,0 +1,68 @@
+---
+layout: post
+title:  "JS Ninja: Inheritance in JS"
+date:   2017-06-16 12:00:01-0400
+---
+Inheritance is a form of reuse in which new objects have access to properties of existing objects. This helps us avoid the need to repeat code and data across our code base. In JS, inheritance works slightly differently than in other popular OO languages.
+
+    function Person(){}
+    Person.prototype.dance = function(){};
+
+// ^^ Defines a dancing Person via a constructor and its prototype
+
+    function Ninja(){}    // Defines a Ninja
+    Ninja.prototype = { dance: Person.prototype.dance};
+
+//^^ Attempts to make Ninja a dancing Person by copying the dance method from the Person prototype
+
+    const ninja = new Ninja();
+    assert (ninja instanceof Ninja,
+      “ninja receives functionality from the Ninja prototype”);
+    assert(ninja instanceof Person, “… and the Person prototype”);
+    assert(ninja instanceof Object, “… and the Object prototype”);
+
+Because the prototype of a function is an object, there are multiple ways of copying functionality (such as properties or methods) to effect inheritance.
+  … In this code, we define a Person and then a Ninja.
+
+In this code, we define a Person and then a Ninja. And because a Ninja is clearly a person, we want Ninja to inherit the attributes of Person. We attempt to do so by copying the dance property of the Person prototype’s method to a similarly name property in the Ninja prototype.
+
+Running our test reveals that although we may have taught the ninja to dance, we failed to make the Ninja a Person.
+
+Apart from the fact that this approach isn’t working, we’d also need to copy each property of Person to the Ninja prototype individually. That’s no way to do inheritance.
+
+WHAT WE REALLY WANT TO ACHIEVE IS A PROTOTYPE CHAIN SO THAT A NINJA CAN BE A PERSON AND A PERSON CAN BE A MAMMAL, AND A MAMMAL CAN BE AN ANIMAL, AND SO ON, ALL THE WAY TO OBJECT
+  …. The best technique for creating such a prototype chain is to use an instance of an object as the other object’s prototype:
+
+SubClass.prototype = new SuperClass();
+
+For Example:
+
+Ninja.prototype = new Person();
+
+^^ This preservers the prototype chain, because the prototype of the SubClass instance will be an instance of the SuperClass, which has a prototype with all the properties of Superclass, and which will in turn have a prototype pointing to an instance of its superclass, and on and on.
+
+Here’s how you fix the example above to use this technique:
+
+    function Person(){}
+    Person.prototype.dance = function(){};
+
+    function Ninja(){}
+    Ninja.prototype = new Person();
+
+    const ninja = new Ninja();
+
+//^^ make a Ninja a Person by making the Ninja prototype an instance of Person
+This will pass the tests
+
+Ninja.prototype = new Person() sets the prototype of the Ninja constructor to a newly created person
+
+The ninja object’s prototype is a person; a ninja has access to all person methods
+
+Notice how we’ve lost our connect to the Ninja constructor. The old prototype is left alone,; nobody is referencing it. It will be deleted.
+
+**** Here’s the important implication: When we perform an instanceof operation, we can determine whether the function inherits the functionality of any object in its prototype chain
+
+NOTE: Another technique that may have occurred to you, and that we advise strongly against, is to use the Person prototype object directly as the Ninja prototype, like this: Ninja.prototype = Person.prototype.
+  ==> Any changes to the Ninja prototype will then also change the Person prototype (because they’re the same object), and that’s bound to have undesirable side effects
+
+**An additional happy side effect of doing prototype inheritance in this manner is that all inherited function prototypes will continue to live-update. Objects that inherit from the prototype always have access to the current prototype properties.
