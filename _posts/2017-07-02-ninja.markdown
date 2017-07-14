@@ -1,0 +1,66 @@
+---
+layout: post
+title:  "JS Ninja: The instanceof Operator"
+date:   2017-07-02 12:00:01-0400
+---
+The instanceof operator works on the prototype chain of the object.
+
+For example, we can have the following expression:
+
+    ninja instanceof Ninja
+
+… The instanceof operator works by checking whether the current prototype of the Ninja function is in the prototype chain of the ninja instance. Let’s go back to our persons and ninjas, for more concrete example.
+
+Here’s a more concrete example: Studying the instanceof operator
+
+    function Person(){}
+    function Ninja(){}
+
+    Ninja.prototype = new Person();
+
+    const ninja = new Ninja();
+
+    //below: a ninja instance is both a Ninja and a Person
+
+    assert(ninja instanceof Ninja, “Our ninja is a Ninja!”);
+    assert(ninja instanceof Person, “A ninja is also a Person. ”);
+
+As expected, a ninja is, at the same time, a Ninja and a Person.
+
+When evaluating the expression, ninja instance of Ninja, the JS engine takes the prototype of the Ninja function, the new Person() object, and checks whether it’s in the prototype chain of the ninja instance.
+
+Because the new Person() object is a direct prototype of the ninja instance, the result is true.
+
+In the second case, where we check ninja instance of Person, the JS engine takes the prototype of the Person function, the Person prototype, and checks whether it can be found in the prototype chain of the ninja instance.
+
+Summary of INSTANCEOF operator:
+
+=> Although its most common use is in providing a clear way to determine whether an instance was created by a particular function constructor, it doesn’t work like that.
+… Instead, it checks whether the right-side function is in the prototype chain of the object on the left.
+    ==> ninja instanceof Person
+    ==> ninja instanceof Ninja
+
+
+=== THE INSTANCEOF CAVEAT===
+
+JS is a dynamic language in which we can modify a lot of things during program execution.
+
+For example, there’s nothing stopping us from changing the prototype of a constructor:
+
+    function Ninja(){}
+
+    const ninja = new Ninja();
+
+    assert(ninja instanceof Ninja, “Our ninja is a Ninja!”);
+
+    Ninja.prototype = {};
+
+^^ We change the prototype of the Ninja constructor function
+
+    assert( !(ninja instanceof Ninja), “The ninja is now not a Ninja!?”);
+
+^^ Even though our ninja instance was created by the Ninja constructor, the instanceof operator now says that ninja isn’t an instance of Ninja anymore!
+
+If we change the prototype of the Ninja constructor function after the creation of the ninja instance, and again test whether ninja is an instanceof Ninja, we see the situation has changed.
+
+==> This will surprise you only if you cling to the inaccurate assumption that the instanceof operator tells us whether an instance was created by a particular function constructor.
