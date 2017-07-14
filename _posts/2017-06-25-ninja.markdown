@@ -1,0 +1,106 @@
+---
+layout: post
+title:  "JS Ninja: The Problem of Overriding the Constructor Property"
+date:   2017-06-25 12:00:01-0400
+---
+If we take a closer look, we’ll see that by setting the new Person object as a prototype of the Ninja constructor, we’ve lost our connection to the Ninja constructor that was previously kept by the original Ninja prototype
+
+… This is a problem, because the constructor property can be used to determine the function with which the object was created.
+.. if we search the ninja object for the constructor property, we follow the prototype and end up in the prototype of Person, which has a constructor property referencing the Person function. (the wrong answer)
+
+Before we can fix the situation, we have to take a detour and see how JS enables us to configure properties:
+
+CONFIGURING OBJECT PROPERTIES:
+
+In JS, every object property is described with a property descriptor through which we can configure the following keys:
+    
+-configurable — if set to true, the property’s descriptor can be changed and the property can be deleted. If set to false, we can do neither of these things.
+
+-enumerable — if set to true, the property shows up during a for -in loop over the object’s properties
+
+-value — specifies the value of the property. Defaults to undefined
+
+- writable — if set to true, the property value can be changed by using an assignment
+
+- get — defines a getter function, which will be called when we access the property. Cant be defined in conjunction with value and writable.
+
+- set —defines the setter function, which will be called whenever an assignment is made to the property. Also can’t be defined in conjunction with value and writable
+
+For example:
+
+    ninja.name = “Yoshi”;
+
+^^ the property will be configurable, enumerable, and writable, its value will be set to Yoshi and functions get and set would be undefined
+
+When we want to fine-tune our property configuration, we can use the built-in Object.defineProperty method, which takes an object on which the property will be defined, the name of the property, and a property descriptor object.
+
+For example:
+
+    //below: Creates an empty object; uses assignments to add two properties:
+
+    var ninja = {};
+    ninja.name = “Yoshi”;
+    ninja.weapon = “kusarigama”;
+
+    //below: The built-in Object.defineProperty method is used to fine-tune the property configuration details:
+
+    Object.defineProperty(ninja, “sneaky”, {
+        configurable: false,
+        enumerable: false,
+        value: true,
+        writable: true
+    });
+
+    assert (“sneaky” in ninja, “We can access the new property”);
+
+
+    //below: use the for-in loop to iterate over ninja’s enumerable properties:
+
+    for (let prop in ninja){
+        assert(prop !== undefined, “An enumerated property: ” + prop);
+    }
+
+
+By setting enumerable to false, we can be sure that the property won’t appear when using the for-in loop. To understand why we’d want to do something like this, let’s go back to the original problem:
+
+FINALLY SOLVING THE PROBLEM OF OVERRIDING THE CONSTRUCTOR PROPERTY:
+
+Problem: When we set a new Person object as a prototype to the Ninja constructor, we lose the original Ninja prototype that keeps our constructor property. 
+
+We don’t want to lose the constructor property because it’s useful for determining the function used to create our object instances and it might be expected by other developers working on our code base.
+
+We can solve this problem by using the knowledge that we’ve just obtained. We’ll define a new constructor property on the new Ninja.prototype by using Object.defineProperty method.
+
+See example below: Fixing the constructor property problem:
+
+    function Person(){}
+
+    Person.prototype.dance = function(){};
+
+    function Ninja(){}
+    Ninja.prototype = new Person();
+
+    Object.defineProperty(Ninja.prototype, “constructor”, {
+        enumerable: false,
+        value: Ninja,
+        writable: true
+    });
+
+    // ^^ We define a new non-enumerable constructor property pointing back to Ninja
+
+    var ninja = new Ninja();
+
+    assert (ninja.constructor === Ninja, 
+        “Connection from ninja instances to Ninja constructor reestablished!”);
+
+    //^^ We’ve established the connection
+
+    for (let prop in Ninja.prototype){
+        assert(prop === “dance”, “The only enumerable property is dance!”);
+    }
+
+    //^^ we haven’t added any enumerable properties to the Ninja.prototype
+
+Now if we run the code, the tests pass. We’ve established the connection between ninja instances and the Ninja function, so we can know that they were constructed by the Ninja function.
+
+In addition, if anybody tries to loop through the properties of the Ninja.prototype object, we’ve made sure that our patched-on property constructor won’t be visited.
