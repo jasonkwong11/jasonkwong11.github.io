@@ -1,0 +1,102 @@
+---
+layout: post
+title:  "JS Ninja: Classes in ES6"
+date:   2017-07-09 12:00:01-0400
+---
+ES6 introduces a new class keyword that provides a much more elegant way of creating objects and implementing inheritance than manually implementing it ourselves with prototypes.
+
+Example: Creating a Class in ES6:
+
+    class Ninja {       
+
+    //^^ the class keyword to start specifying an ES6 class
+    //below: Defines a constructor function that will be called when we call the class with the keyword new:
+
+        constructor(name){
+            this.name = name;
+        }
+
+        swingSword(){
+            return true;
+        }
+
+        //^^ defines an additional method accessible to all Ninja instances
+
+        var ninja = new Ninja(“Yoshi”);
+
+        //^^ Instantiates a new ninja object with the keyword new
+
+        
+        assert( ninja instanceof Ninja, “Our ninja is a Ninja”);
+        assert( ninja.name === “Yoshi”, “named Yoshi”);
+        assert( ninja.swingSword(), “and he can swing a sword”);
+
+        //^^ Tests for the expected behavior
+
+    }
+
+CLASSES ARE SYNTACTIC SUGAR
+
+the above example can be written to ES5 as below:
+
+    function Ninja(name){
+        this.name = name;
+    }
+
+    Ninja.prototype.swingSword = function(){
+        return true;
+    };
+
+As you can see, there’s nothing new with ES6 classes. The code is more elegant but the same concepts are applied.
+
+STATIC METHODS
+
+In the previous examples, you saw how to define object methods (prototype methods), accessible to all object instances.
+
+In addition to such methods, classical OO languages such as Java use static method, methods defined on a class level. CLASS METHODS IN RUBY
+
+Example of Static Methods in ES6:
+
+    class Ninja {
+        constructor(name, level){
+            this.name = name;
+            this.level = level;
+        }
+
+        swingSword(){
+            return true;
+        }
+
+        static compare(ninja1, ninja2){
+            return ninja1.level - ninja2.level;
+        }
+
+        //^^ Uses the static keyword to make a static method
+    }
+
+    var ninja1 = new Ninja(“Yoshi”, 4);
+    var ninja2 = new Ninja(“Hattori”, 3);
+
+    assert(! (“compare” in ninja) && !(“compare” in ninja2),
+        “A ninja instance doesn’t know how to compare”);
+
+    //^^ ninja instances don’t have access to compare
+
+    assert(Ninja.compare(ninja1, ninja2) > 0,
+        “The Ninja class can do the comparison”);
+
+    //^^ The class Ninja has access to the compare method
+
+    assert(!(“swingSword” in Ninja),
+        “The Ninja class cannot swing a sword”);
+
+The compare method, which compares the skill levels of two ninjas, is defined on the class level, and not the instance level.
+
+Later we test that this effectively means that the compare method isn’t accessible from ninja instances but is accessible from the Ninja class.
+
+Because static methods are class-level methods, we can implement them by taking advantage of functions as first-class objects, and adding a method property to our constructor function:
+
+    function Ninja(){}
+    Ninja.compare = function(ninja1, ninja2){…}
+
+^^ Extends the constructor function with a method to mimic static methods in pre-ES6 code
