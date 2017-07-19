@@ -11,7 +11,7 @@ The previous way we implemented inheritance was very complex and had a lot to re
 
 Luckily with ES6, all of this is significantly simplified:
 
-    Example: Inheritance in ES6
+Example: Inheritance in ES6
 
     class Person {
         constructor (name) {
