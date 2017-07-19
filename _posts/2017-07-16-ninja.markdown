@@ -4,12 +4,10 @@ title:  "Implementing Inheritance in ES6"
 date:   2017-07-16 12:00:01-0400
 ---
 The previous way we implemented inheritance was very complex and had a lot to remember:
+ 1. Methods accessible to all instances should be added directly to the prototype of the constructor function, as we did with the dance method and the Person constructor
     
-    1. Methods accessible to all instances should be added directly to the prototype of the constructor function, as we did with the dance method and the Person constructor
-    
-    2. We have to set the prototype of the derived “class” to the instance of the base “class”. In this case, we assigned a new instance of Person to Ninja.prototype
-
-    3. ^^ This messes up the constructor property, so we have to manually restore it with the Object.defineProperty method.
+ 2. We have to set the prototype of the derived “class” to the instance of the base “class”. In this case, we assigned a new instance of Person to Ninja.prototype
+ 3. ^^ This messes up the constructor property, so we have to manually restore it with the Object.defineProperty method.
 
 Luckily with ES6, all of this is significantly simplified:
 
