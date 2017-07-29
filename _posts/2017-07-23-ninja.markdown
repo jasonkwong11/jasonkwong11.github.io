@@ -1,0 +1,217 @@
+---
+layout: post
+title:  "Controlling Access to Object Properties with Getters and Setters"
+date:   2017-07-23 12:00:01-0400
+---
+In JS, objects are relatively simple collections of properties. The primary way to keep track of our program state is by modifying those properties. For example, consider the following code:
+
+    function Ninja (level) {
+        this.skillLevel = level;
+    }
+
+    const ninja = new Ninja(100);
+
+Later, if we want to change the value of the property, we can write the following code:
+    
+    ninja.skillLevel = 20;
+
+But here are the problems with that:
+
+- We want to safeguard against accidental mistakes, such as assigning unanticipated data.
+- We want to log all changes to the skillLevel property
+- We need to show the value of our skillLevel property somewhere in the UI of our web page.
+    … Naturally, we want to present the last, up-to-date value of the property, but how can we easily do this?
+
+^^^ We can handle all of these cases elegantly with getter and setter methods.
+
+Previously we used getters and setters as a means of mimicking private object properties in JS through closures. 
+
+Let’s revisit the material you’ve learned so far, by working with ninjas that have a private skillLevel property accessible only through getters and setters:
+
+Example: Using getters and setters to guard private properties:
+
+    function Ninja ( ) {
+        let skillLevel;     // Defines a private skillLevel variable
+        
+        this.getSkillLevel = () => skillLevel;
+
+        //^^ The getter method controls access to our private skillLevel variable
+
+        this.setSkillLevel = value => {
+            skillLevel = value;
+        };
+
+        //^^ The setter method controls the values we can assign to skillLevel
+    }
+
+    const ninja = new Ninja();
+    ninja.setSkillLevel(100);
+
+//^^ sets a new value of skillLevel through the setter method
+
+    assert(ninja.getSkillLevel() === 100,
+        “Our ninja is at level 100!”);
+
+//^^ retrieves the value of skillLevel with the getter method
+
+To log all read attempts of the skillLevel property:
+
+    function Ninja() {
+
+        this.getSkillLevel = () => {
+            report(“Getting skill level value”);
+            return skillLevel;
+            //^^ using getters, we can know whenever code accesses a property
+        }
+
+        this.setSkillLevel = value => {
+            report(“Modifying skillLevel property from:”,
+                skillLevel, “to: ”, value);
+
+            skillLevel = value;
+        }
+    }
+
+//^^ using setters, we can know whenever code wants to set a new value to a property
+
+Using methods like this is awkward, luckily there are built in ways to handle this:
+
+DEFINING GETTERS AND SETTERS:
+
+In JS, getter and setter methods can be defined in two ways:
+
+1. by specifying them within object literals or within ES6 class definitions
+2. by using the built-in Object.defineProperty method
+
+Example of Defining Getters and Setters in Object Literal (in this case: we want to be able to get and set the first ninja in the list)
+
+    const ninjaCollection = {
+
+        ninjas: [“Yoshi”, “Kuma”, “Hattori”],
+        
+        get firstNinja(){
+            report(“Getting firstNinja”);
+            return this.ninjas[0]
+        },
+
+        //^^ defines a getter method for the firstNinja property that returns the first ninja in our collection and logs a message
+        **A getter doesn’t receive any arguments
+
+        set firstNinja(value){
+            report(“Setting firstNinja”);
+            this.ninjas[0] = value;
+        }
+
+        //^^ defines a setter method for the firstNinja property that modifies the first ninja in our collection and logs a message 
+        **a setter receives one argument
+    };
+
+    assert (ninjaCollection.firstNinja === “Yoshi”,
+        “Yoshi is the first ninja”);
+
+//^^ accesses the firstNinja property as if it were a standard object property
+
+    ninjaCollection.firstNinja = “Hachi”;
+
+//^^ modifies the firstNinja property as if it were a standard object property
+
+    assert(ninjaCollection.firstNinja === “Hachi”
+        && ninjaCollection.ninjas[0] === “Hachi”,
+        “Now Hachi is the first ninja”);
+
+** NOTICE THAT THE GETTER IS ACCESSED AS IF IT WERE A STANDARD OBJECT PROPERTY (AND NOT THE METHOD THAT IT IS)
+    … the method is triggered immediately when the property is accessed.
+    … the getter method’s execution context is created and pushed on the stack, same as when a standard function is called
+
+Example of Using Getters and Setters with ES6 Classes
+
+    class NinjaCollection {
+
+        constructor(){
+            this.ninja = [“Yoshi”, “Kuma”, “Hattori”];
+        }
+
+        get firstNinja(){
+            report(“Getting firstNinja”);
+            return this.ninjas[0];
+        }
+
+        set firstNinja(value){
+            report (“Setting firstNinja”);
+            this.ninjas[0] = value;
+        }
+    }
+
+    const ninjaCollection = new NinjaCollection();
+
+*** If you have getter but no setter, you get an error in strict mode. silently fail in construct ***
+
+Remember, JS doesn’t have private object properties. Instead, we mimic them through closures, by defining variables and specifying object methods that will close over those variables. 
+
+Because with object literals and classes, our getter and setter methods aren’t created within the same function scope as variables that we could use for private object properties, we can’t do this.
+
+Luckily, we can do use Object.defineProperty instead:
+
+Remember: it has a get and set property that define’s the property’s getter and setter methods
+
+Example of Defining Getters and Setters with Object.defineProperty:
+
+    function Ninja( ) {     //defines a constructor function
+
+        let _skillLevel = 0;        
+        // ^^ defines a “private” variable that will be accessible through function closures
+
+        Object.defineProperty(this, “skillLevel”, {
+
+        // ^^ Uses the built-in Object.defineProperty to define a skillLevel property
+        // below: a get method that will be called whenever we read the skillLevel property
+
+            get: () => {
+                report(“The get method is called”);
+                return _skillLevel;
+            },
+            set: value => {
+                report(“The set method is called”);
+                _skillLevel = value;
+            }
+
+            //^^ A set method that will be called whenever we assign a value to the skillLevel property 
+        
+        });
+    }
+
+    const ninja = new Ninja();
+
+    assert(typeof ninja._skillLevel === “undefined”,
+        “We cannot access a ‘private’ property”);
+    assert(ninja.skillLevel === 0, “The getter works fine!”);
+
+//^^ The private variable isn’t accessible directly, but through the skillLevel getter
+
+    ninja.skillLevel = 10;
+    assert(ninja.skillLevel === 10, “The value was updated”);
+
+//^^ The set method is implicitly called when assigning to the skillLevel property
+
+Because we want the skillLevel property to control access to a private variable, we specify a get and a set method that will be called whenever the property is accessed.
+
+Notice that, unlike getters and setters specified on object literals and classes, the get and set methods defined through Object.defineProperty are created in the same scope as the “private” skillLevel variable.
+
+Both get and set methods create a closure around the private variable, and we can access that private variable only through these two methods.
+
+… The rest of the code works exactly as in the previous examples
+… We can’t access the private variable directly. instead all interactions have to go through the getter and setter, which we use as if they were standard object properties.
+
+    ninja.skillLevel === 10
+    //^^ activates the getter method
+
+    ninja.skillLevel = 10
+    //^^ activates the setter method
+
+
+*** The approach with Object.defineProperty is more verbose and complicated than getters and setters in object literals and classes, but in certain cases we need private object properties, it’s well worth it.
+
+Getters and setters allow us to define object properties that are used like standard object properties, but are methods that can execute additional code whenever we read or write to a particular property.
+
+… This is an incredibly useful feature that enables us to perform logging, validate assignment values and even notify other parts of the code when certain changes occur.
+
