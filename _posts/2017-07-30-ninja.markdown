@@ -49,8 +49,7 @@ Now whenever a new value is assigned to the skillLevel property, we check whethe
 
 ***YOU CAN USE THE SAME PRINCIPLE TO TRACK VALUE HISTORY, PERFORM LOGGING, PROVIDE CHANGE NOTIFICATION, AND MORE
 
-
-- - - USING GETTERS AND SETTERS TO DEFINE COMPUTED PROPERTIES - - -
+USING GETTERS AND SETTERS TO DEFINE COMPUTED PROPERTIES:
 
 In addition to being able to control access to certain object properties, getters and setters can be used to define computed properties: 
     … computed properties are properties whose value is calculated per request.
