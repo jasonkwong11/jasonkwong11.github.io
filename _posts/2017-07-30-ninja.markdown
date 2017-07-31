@@ -1,0 +1,105 @@
+---
+layout: post
+title:  "Two Practical Applications of Getters and Setters"
+date:   2017-07-30 12:00:01-0400
+---
+A setter is a method that’s executed whenever we write a value to a matching property. We can take advantage of setters to perform an action whenever code attempt to update the value of a property.
+
+For example, one of the things we can do is validate the passed-in value. The following code ensures that our skillLevel property can be assigned only integer values:
+
+Example: Validating property value assignments with Setters:
+
+    function Ninja(){
+        let _skillLevel = 0;
+
+        Object.defineProperty(this, ‘skillLevel’, {
+            get: () => _skillLevel,
+            set: value => {
+                if (!Number.isInteger(value)){
+                    throw new TypeError(“Skill level should be a number”);
+                }
+
+                //^^ Checks whether the passed-in value is an integer. If it isn’t, an exception is thrown.
+
+                _skillLevel = value;
+            }
+        });
+    }
+
+    const ninja = new Ninja();
+
+    ninja.skillLevel = 10;
+    assert(ninja.skillLevel === 10, “The value was updated”);
+
+    //^^ We can assign an integer value to the property
+
+    try {
+        ninja.skillLevel = “Great”
+        fail(“Should not be here”);
+    } catch (e){
+        pass(“Setting a non-integer value throws an exception”);
+    }
+
+//^^ Trying to assign a noninteger value results in an exception thrown 
+// from the setter method.
+
+Now whenever a new value is assigned to the skillLevel property, we check whether the passed-in value is an integer. If it isn’t, an exception is thrown, and the private _skillLevel variable won’t be modified.
+
+^^ THIS IS HOW YOU AVOID THOSE SILLY BUGS THAT HAPPEN WHEN A VALUE OF THE WRONG TYPE ENDS UP IN A CERTAIN PROPERTY
+
+***YOU CAN USE THE SAME PRINCIPLE TO TRACK VALUE HISTORY, PERFORM LOGGING, PROVIDE CHANGE NOTIFICATION, AND MORE
+
+
+- - - USING GETTERS AND SETTERS TO DEFINE COMPUTED PROPERTIES - - -
+
+In addition to being able to control access to certain object properties, getters and setters can be used to define computed properties: 
+    … computed properties are properties whose value is calculated per request.
+
+Computed properties don’t store a value; they provide a get and/or a set method to retrieve and set other properties indirectly.
+
+In this example, the object has two properties, name and clan, which we’ll use to compute the property fullTitle:
+
+Example of Defining Computed Properties:
+
+    const shogun = {
+        name: “Yoshiaki”,
+        clan: “Ashikaga”,
+
+        get fullTitle () {
+            return this.name + “ “ + this.clan;
+        },
+
+        //^^ Defines a getter method on a fullTitle property of an object literal that calculates the value by concatenating two object properties
+
+        set fullTitle(value) {
+            const segments = value.split(“ ”);
+            this.name = segments[0];
+            this.clan = segments[1];
+        }
+
+        //^^ Defines a setter method on a fullTitle property of an object literal that splits the passed-in value and updates two standard properties
+
+    };
+
+    assert(shogun.name === “Yoshiaki”, “Our shogun Yoshiaki”);
+    assert(shogun.clan === “Ashikaga”, “Of clan Ashikaga”);
+    assert(shogun.fullTitle === “Yoshiaki Ashikaga”,
+        “The full name is now Yoshiaki Ashikaga”);
+
+//^^ The name and clan properties are normal properties whose values are directly obtained. Accessing the fullTitle property calls the get method, which computes the value.
+
+    shogun.fullTitle = “Ieyasu Tokugawa”;
+    assert(shogun.name === “Ieyasu”, “Our shogun Ieyasu”);
+    assert(shogun.clan === “Tokugawa”, “Of clan Tokugawa”);
+    assert(shogun.fullTitle === “Ieyasu Tokugawa”,
+        “The full name is now Ieyasu Tokugawa”);
+
+//^^ Assigning a value to the fullTitle property calls the set method, which computes and assigns new values to the name and clan properties.
+
+This takes care of both routes: reading the fullTitle property computes its value, and writing to the fullTitle property modifies the properties that constitute the property value.
+
+To be honest, we don’t have to use computed properties. A method called getFullTitle could be equally useful, but computed properties can improve the conceptual clarity of our code.
+
+****** IF A CERTAIN VALUE (in this case, the fullTitle value) DEPENDS ONLY ON THE INTERNAL STATE OF THE OBJECT (in this case, on the name and clan properties), IT MAKES PERFECT SENSE TO REPRESENT IT AS A DATA FIELD, A PROPERTY, INSTEAD OF A FUNCTION
+
+For logging, data validation, and detecting changes in property values, sometimes getters and setters aren’t enough. In certain cases, we need to control all types of interactions with our objects, and for this we can use a completely new type of object: a proxy... stay tuned for next week's post!
