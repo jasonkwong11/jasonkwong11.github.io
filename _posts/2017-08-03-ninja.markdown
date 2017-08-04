@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Proxies"
+title:  "Proxies Intro"
 date:   2017-08-03 12:00:01-0400
 ---
 A proxy is a surrogate through which we control access to another object.
