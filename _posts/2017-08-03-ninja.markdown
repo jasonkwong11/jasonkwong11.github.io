@@ -76,6 +76,6 @@ A few operations we can’t override: equality ( == or === ), instanceof, and th
 For example, the expression x == y (or a stricter x === y) is used to check whether x and y refer to identical objects (or are of the same value). 
 
 This equality operator has some assumptions. For example, comparing two object should always return the same value for the same two objects
-    … which isn’t something that we can guarantee if that value is determined by a user-specified function.
 
-    … in addition the act of comparing two objects shouldn’t give access to one of those objects, which would be the case if equality could be trapped. For similar reasons, the instance and typeof operators can’t be trapped.
+… which isn’t something that we can guarantee if that value is determined by a user-specified function.
+… in addition the act of comparing two objects shouldn’t give access to one of those objects, which would be the case if equality could be trapped. For similar reasons, the instance and typeof operators can’t be trapped.
