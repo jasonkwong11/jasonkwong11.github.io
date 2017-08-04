@@ -1,0 +1,81 @@
+---
+layout: post
+title:  "Proxies"
+date:   2017-08-03 12:00:01-0400
+---
+A proxy is a surrogate through which we control access to another object.
+
+It enables us to define custom actions that will be executed when an object is being interacted with — for example, when a property value is read or set, or when a method is called.
+
+You can think of proxies as almost a generalization of getters and setters; but with each getter and setter, you control access to only a single object property, whereas proxies enable to generically handle all interactions with an object, including even method calls.
+
+We can use proxies when we’d traditionally use getters and setters, such as for logging, data validation, and computed properties. 
+
+But proxies are even more powerful… 
+    They allow us to easily add profiling and performance measurements to our code,
+    … auto populate object properties in order to avoid pesky null exceptions, 
+    … and to wrap host objects as the DOM in order to reduce cross-browser incompatibilities.
+
+Example of Creating Proxies with the Proxy Constructor:
+
+    const emperor = { name: “Komei” };  // The emperor is our target object.
+
+    const representative = new Proxy( emperor, {
+
+        //^^ Creates a proxy with the Proxy constructor that takes in the object the proxy wraps…
+        //below: … and an object with traps that will be called when reading (get) and writing (set) to properties
+
+        get: (target, key) => {
+            report(“Reading ” + key + “ through a proxy”);
+            return key in target ? target[key]
+                : “Don’t bother the emperor!”
+        },
+        set: (target, key, value) => {
+            report(“Writing ” + key + “ through a proxy”);
+            target[key] = value;
+        }
+    });
+
+    assert (emperor.name === “Komei”, “The emperor’s name is Komei”);
+    assert (representative.name === “Komei”,
+        “We can get the name property through a proxy”);
+
+    assert(emperor.nickname === undefined,
+        “The emperor doesn’t have a nickname ”);
+
+    //^^ Accessing a nonexistent property directly on the object returns undefined.
+
+    assert(representative.nickname === “Don’t bother the emperor!”,
+        “The proxy jumps in when we make improper requests”);
+
+    //^^ Accessing a property through a proxy detects that the object doesn’t exist in our target object, so a warning message is returned.
+
+    representative.nickname = “Tenno”;
+    assert(emperor.nickname === “Tenno”,
+        “The emperor now has a nickname”);
+    assert(representative.nickname === “Tenno”,
+        “The nickname is also accessible through the proxy”);
+
+    // ^^ Adds a property through the proxy. The property is accessible both through the target object and through the proxy.
+
+** This is the gist of how to use proxies. Through the Proxy constructor, we create a proxy object that controls access to the target object by activating certain traps, whenever an operation is performed directly on a proxy.
+    … In this example, we’ve used the get and set traps, but many other built-in traps allow us to define handlers for various object actions:
+
+For example:
+
+1. The apply trap will be activated when calling a function, and the construct trap when using the new operator.
+
+2. The get and set traps will be activated when reading/writing to a property
+
+3. The enumerate trap will be activated for for-in statements
+
+4. getPrototypeOf and setPrototypeOf will be activated for getting and setting the prototype value
+
+A few operations we can’t override: equality ( == or === ), instanceof, and the typeof operator
+
+For example, the expression x == y (or a stricter x === y) is used to check whether x and y refer to identical objects (or are of the same value). 
+
+This equality operator has some assumptions. For example, comparing two object should always return the same value for the same two objects
+    … which isn’t something that we can guarantee if that value is determined by a user-specified function.
+
+    … in addition the act of comparing two objects shouldn’t give access to one of those objects, which would be the case if equality could be trapped. For similar reasons, the instance and typeof operators can’t be trapped.
