@@ -1,0 +1,84 @@
+---
+layout: post
+title:  "Proxies for Logging and Measuring Performance"
+date:   2017-08-06 12:00:01-0400
+---
+One of the most powerful tools when trying to figure out how code works or when trying to get to the root of a nasty bug is logging: the act of outputting information that we find useful at a particular moment.
+
+For example, we might want to know which functions are called, how long they’ve been executing, what properties are read or written to, and so on.
+
+When adding a console.log, we’re cluttering our domain code with logging code: not ideal. In addition, if in the future we need more properties on the ninja object, we have to be careful not to forget to add additional statements to each new property.
+
+One straightforward use of proxies is to enable logging whenever we read or write to a property, but in a much nicer and cleaner way:
+
+EXAMPLE: Using proxies makes it easier to add logging to objects:
+
+    function makeLoggable(target) {
+        
+        //^^ defines a function that takes a target object and makes it loggable
+        // below: creates a new proxy with that target object   
+
+        return new Proxy(target, {
+
+        //^^ creates a new proxy with that target object
+        
+            get: (target, property) => {
+                report(“Reading ” + property);
+                return target[property];
+            },
+
+            // ^^ a get trap that logs property reads
+            //below: a set trap that logs property writes
+
+            set: (target, property, value) => {
+                report(“Writing value ” + value + “ to “ + property);
+                target[property] = value;
+            }
+        });
+    }
+
+    let ninja = { name: “Yoshi”};
+    ninja = makeLoggable(ninja);
+
+^^ Creates a new ninja object that will serve as your target object and make it loggable
+
+    assert(ninja.name === “Yoshi”, “Our ninja Yoshi”);
+    ninja.weapon = “sword”;
+
+^^ Reads and write to our proxy object. These actions are logged by the proxy traps.
+
+Here we define a makeLoggable function that takes a target object and returns a new Proxy that has a handler with a get and a set trap. These traps, besides reading and writing to the property, log the information about which property is read or written to.
+
+Notice how much easier and more transparent this is when compared to the standard way of using getters and setters. We don’t have to mix our domain code with our logging code, and there’s no need to add separate logging for each object property.
+    … Instead all property reads and writes go through our proxy object trap methods. 
+    … Logging has been specified in only one place and is reused as many times as necessary, on as many objects as necessary.
+
+USING PROXIES FOR MEASURING PERFORMANCE:
+
+Besides being used for logging property accesses, proxies can be used for measuring the performance of function invocations, without even modifying the source code of a function. 
+
+Say we want to measure the performance of a function that calculates whether a number is a prime:
+
+If we need to measure the performance of the isPrime function, but without modifying its code, we could wrap the function into a proxy that has a trap that will be called whenever the function is called:
+
+    function isPrime (number){
+        ….
+    }
+
+    isPrime = new Proxy(isPrime, {
+        apply: (target, thisArg, args) => {
+            console.time(“isPrime”);        //starts timer
+        
+            const result = target.apply(thisArg, args);
+
+            console.timeEnd(“isPrime”);     //ends timer
+            
+            return result
+        }
+    });
+
+This way, we don’t have to change any of the code that calls the function whose execution time we want to measure. 
+
+The rest of the program code is completely oblivious to our changes.
+
+Whenever the isPrime function is called, that call is rerouted to our proxy’s apply trap, which will start a stopwatch with a built-in console.time method (), log the elapsed time, and finally return the result of the isPrime invocation.
