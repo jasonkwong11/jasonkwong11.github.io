@@ -1,0 +1,135 @@
+---
+layout: post
+title:  "Common Array Operations"
+date:   2017-08-20 12:00:01-0400
+---
+This section looks at ways to create arrays. Then we’ll explore how to add items to and remove items from different positions in an array. Finally, we’ll examine the built-in array methods that will make our array-handling code much more elegant.
+
+There are two fundamental ways to create new arrays:
+
+1. Using the built-in Array constructor
+
+    const samurai = new Array(“Oda”, “Tomoe”);
+
+2. Using array literals [ ]
+
+    const ninjas = [“Kuma”, “Hattori”, “Yagyu”];
+
+Access the last array item with array.length - 1.
+
+Writing to indexes outside of the array bounds extends the array:
+
+    ninjas[4] = “Ishi”;
+    assert(ninjas.lenght === 5,
+        “Arrays are automatically expanded”);
+
+Manually overriding the length property with a lower value deletes the excess items:
+
+    ninjas.length = 2;
+    assert(ninjas.length == 2, “There are only two ninjas now”);
+
+If you try to access an element that doesn’t exist, you’ll just get null:
+
+    ninjas[343] == undefined
+
+Now we’ll go through some common array methods:
+
+ADDING AND REMOVING ITEMS AT THE END OF AN ARRAY:
+
+Here are the following simple methods we can use to add items to and remove items from an array:
+
+1. push adds an item to the end of the array.
+2. unshift adds an item to the beginning of the array
+3. pop removes an item from the end of the array
+4. shift removes an item from the beginning of the array.
+
+** Push and pop are significantly faster operations than shift and unshift
+
+ADDING AND REMOVING ITEMS AT ANY ARRAY LOCATION
+
+You can’t simply use the delete ninjas[1] to delete an item at a specific location like this:
+
+    const ninjas = [“Yagu”, “Kuma”, “Hattori”, “Fuma”];
+
+    delete ninjas[1];
+
+***YOU CAN’T DO THIS BECAUSE IT WILL ONLY CREATE A HOLE IN THE ARRAY. 
+
+The array still has 4 items, but one is undefined.
+
+Similarly if we wanted to insert an item at an arbitrary position, where would we even start?
+
+***THE ANSWER TO ALL THESE PROBLEMS IS THE SPLICE METHOD
+
+Splice Method: starting from a given index, this method removes and inserts items
+
+Example of Splice:
+
+    const ninjas = [ “Yagyu”, “Kuma”, “Hattori”, “Fuma”];
+
+    var removedItems = ninjas.splice(1,1);
+
+    assert(removedItems.length === 1, “One item was removed”);
+    assert (removedItems[0] === “Kuma”);
+
+^^ Splice method removes one element starting at index 1. The ninja array no longer contains Kuma; subsequent items were automatically shifted
+
+We can insert an element at a position by adding arguments to the splice call:
+
+    removed items = ninjas.splice(1, 2, “Mochizuki”, “Yoshi”, “Momochi”)
+
+^^ Starting from index 1, it first removes two items and then adds three items:  “Mochizuki”, “Yoshi”, “Momochi”
+
+COMMON OPERATIONS ON ARRAYS:
+
+1. Iterating (or traversing) through arrays
+2. Mapping existing array items to create a new array based on them
+3. Testing array items to check whether they satisfy certain conditions
+4. Finding specific array items
+5. Aggregating arrays and computing a single value based on array items (e.g: calculating the sum of an array)
+
+ITERATING OVER ARRAYS:
+
+JS arrays have a built-in forEach method we can use in such situations:
+
+Example of using the forEach method:
+
+    const ninjas = [“Wagyu”, “Kuma”, “Hattori”];
+
+    ninjas.forEach( ninja => {
+        assert(ninja !== null, ninja)
+    }) 
+
+We provide a callback, in this case: an arrow function, that’s called immediately for each item in the array.
+
+MAPPING ARRAYS:
+
+You may do this (Naive way):
+
+    const ninjas = [
+        {name: “Wagyu”, weapon: “shuriken”},
+        {name: “Yoshi”, weapon: “katana”},
+        {name: “Kuma”, weapon: “wakizashi”},
+    ]
+
+    const weapons = [];
+    ninjas.forEach(ninja => {
+        weapons.push(ninja.weapon);
+    })
+
+^^ Creates a new array and uses a forEach loop over ninjas to extract individual ninja weapons
+
+But there’s a better way to map an array: the map function:
+
+    const ninjas = [
+        {name: “Wagyu”, weapon: “shuriken”},
+        {name: “Yoshi”, weapon: “katana”},
+        {name: “Kuma”, weapon: “wakizashi”},
+    ]
+
+    const weapons = ninjas.map(ninja => ninja.weapon);
+
+^^ The built-in map method takes a function that’s called for each item in the array
+
+The map method constructs a completely new array and then iterates over the input array.
+For each item in the input array, map places exactly one item in the newly constructed array, based on the result of the callback provided to map
