@@ -9,11 +9,11 @@ There are two fundamental ways to create new arrays:
 
 1. Using the built-in Array constructor
 
-    const samurai = new Array(“Oda”, “Tomoe”);
+        const samurai = new Array(“Oda”, “Tomoe”);
 
 2. Using array literals [ ]
 
-    const ninjas = [“Kuma”, “Hattori”, “Yagyu”];
+        const ninjas = [“Kuma”, “Hattori”, “Yagyu”];
 
 Access the last array item with array.length - 1.
 
