@@ -1,0 +1,72 @@
+---
+layout: post
+title:  "Testing and Searching JS Array Items"
+date:   2017-08-27 12:00:01-0400
+---
+When working with collections of items, we’ll often run into situations where we need to know whether all or some of the array items satisfy certain conditions.
+
+For this, all JS arrays have access to the built-in every and some methods, shown next:
+
+Example of Testing arrays with the Every and Some methods:
+
+    const ninjas = [
+        {name: “Wagyu”, weapon: “shuriken”},
+        {name: “Yoshi”},
+        {name: “Kuma”, weapon: “wakizashi”},
+    ]
+
+below: The built-in every method takes a callback that’s called for each array item. It returns true if the callback returns a true value for all array items, or false otherwise:
+
+    const allNinjasAreNamed = ninjas.every(ninja => “name” in ninja);
+    const allNinjasAreArmed = ninjas.every(ninja => “weapon” in ninja);
+
+    assert(allNinjasAreNamed, “Every ninja has a name”);
+    assert(!allNinjasAreArmed, “But not every ninja is armed”);
+
+    const someNinjasAreArmed = ninjas.some(ninja => “weapon” in ninja);
+    assert(someNinjasAreArmed, “But some ninjas are armed”);
+
+^^ The built-in some method also takes a callback. It returns true if the callback returns a true value for at least one array item, or false otherwise.
+
+The every method takes a callback that, for each ninja in the collection, checks whether we know the ninja’s name. Every returns true only if the passed-in callback returns true for every item in the array.
+
+SOME calls the callback on each array item until an item is found for which the callback returns a true value. if such item is found, the return value is true, if not, the return value is false.
+
+SEARCHING ARRAYS:
+
+A common operation is finding items in an array. This is greatly simplified with a built in array method: find.
+
+Example of Finding Array Items:
+
+    const ninjas = [
+        {name: “Wagyu”, weapon: “shuriken”},
+        {name: “Yoshi”},
+        {name: “Kuma”, weapon: “wakizashi”},
+    ]
+
+    const ninjaWithWakizashi = ninjas.find( ninja => {
+        return ninja.weapon === “wakizashi”;
+    });
+
+^^ Uses the find method to find the first array item that satisfies a certain condition, represented by a passed-in callback.
+
+    assert(ninjaWithWakizashi.name === “Kuma”
+        && ninjaWithWakizashi.weapon === “wakizashi”,
+        “Kuma is wielding a wakizashi”);
+
+    const ninjaWithKatana = ninjas.find( ninja => {
+        return ninja.weapon === “katana”;
+    });
+
+^^ the find method returns undefined if an item can’t be found.
+
+    assert(ninjaWithKatana === undefined,
+        “We couldn’t find a ninja that wields a katana”);
+
+    const armedNinjas = ninjas.filter(ninja => “weapon” in ninja);
+
+Use the filter method to find multiple items that all satisfy a certain condition
+
+    assert(armedNinjas.length === 2, “There are two armed ninjas: ”);
+    assert(armedNinjas[0].name === “Yagyu”
+        && armedNinjas[1].name === “Kuma”, “Wagyu and Kuma”)
