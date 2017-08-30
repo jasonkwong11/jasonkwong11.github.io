@@ -1,0 +1,72 @@
+---
+layout: post
+title:  "JS Array Methods: Filter, Find, and Sort"
+date:   2017-08-29 12:00:01-0400
+---
+The find method, passes in a callback that’s invoked for each item in the collection until the targeted item is found. This is indicated by the callback returning true. If we need to find multiple items satisfying a certain criterion, we can use the filter method. Filter creates a new array containing all the items that satisfy that criterion.
+
+For example: 
+
+    const armedNinjas = ninjas.filter( ninja => “weapon” in ninja);
+
+^^ creates a new armedNinjas array that contains only ninjas with a weapon. In this case, Yoshi is left out.
+
+How to find the index of an item:
+
+EXAMPLE OF FINDING ARRAY INDEXES:
+
+    const ninjas = [“Yagyu”, “Yoshi”, “Kuma”, “Yoshi”];
+
+    assert(ninjas.indexOf(“Yoshi”) === 1, “Yoshi is at index 1”);
+    assert(ninjas.lastIndexOf(“Yoshi”) === 3, “and at index 3”);
+
+    const yoshiIndex = ninjas.findIndex( ninja => ninja === “Yoshi”);
+
+    assert (yoshiIndex === 1, “Yoshi is still at index 1”);
+
+To find the index of a particular item, we use the built-in indexOf method, passing it the item whose index we want to find:
+
+    ninjas.indexOf(“Yoshi”);
+
+In cases where a particular item can be found multiple times in an array (like with “Yoshi”), we may also be interested in finding the last index where Yoshi appears. For this, we can use the lastIndexOf method:
+
+    ninjas.lastIndexOf(“Yoshi”);
+
+In the most general case, when we don’t have a reference to the exact item whose index we want to search for, we can use the findIndex method:
+
+    const yoshiIndex = ninjas.findIndex(ninja => ninja === “Yoshi”);
+
+The findIndex method takes a callback and returns the index of the first item for which the callback returns true. In essence, it works a lot like the find method, the only difference being that find returns a particular item, whereas findIndex returns the index of that item.
+
+SORTING ARRAYS:
+
+One of the most common array operations is sorting — arranging items systematically in some order.
+
+JS provides a built-in sort method:
+
+    array.sort((a,b) => a - b);
+
+The only thing we have to provide is a callback that informs the sorting algorithm about the relationship between two array items.
+
+1. If a callback returns a value less than 0, then item a should come before item b.
+2. If a callback returns a value equal to 0, then items a and b are on equal footing (as far as the algorithm is concerned, they’re equal)
+3. If a callback returns a value greater than 0, then item a should come after item b.
+
+To sort an array lexicographically, according to ninja names we use the sort function:
+
+    const ninjas = [{name: “Yoshi”}, {name: “Yagyu”}, {name: “Kuma”}];
+
+    ninjas.sort( function( ninja1, ninja2){
+      if (ninja1.name < ninja2.name) {return -1; }
+      if (ninja1.name > ninja2.name) {return 1; }
+
+      return 0;
+    });
+
+^^ passes a callback to the built-in sort method to specify a sorting order
+
+    ninjas array is now: “Kuma”, “Wagyu”, “Yoshi”;
+
+Because we want to make a lexical comparison, we state that if ninja1’s name is less than ninja2’s name, the callback returns -1 (remember, this means ninja1 should come before ninja2, in the final sorted order); if it’s greater, the callback returns 1 (ninja1 should come after ninja2); if they’re equal, the callback returns 0. 
+
+Notice that we can use simple less-than and greater than operators to compare two ninja names.
