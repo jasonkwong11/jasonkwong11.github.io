@@ -1,0 +1,110 @@
+---
+layout: post
+title:  "JS Array Methods: Reduce and Mimicking Array Methods"
+date:   2017-09-03 12:00:01-0400
+---
+A common problem in web dev is summing up the items in an array. Here's a bad to do it:
+
+    const numbers = [1, 2, 3, 4];
+    const sum = 0;
+
+    numbers.forEach(number => {
+        sum += number;
+    });
+
+This is bad because the code has to visit every item in a collection and aggregate some value, in essence reducing the entire array to a single value.
+
+Instead, use the reduce method for this:
+
+    const numbers = [1, 2, 3, 4];
+
+    const sum = numbers.reduce((aggregated, number) => aggregated + number, 0);
+
+This uses reduce to accumulate a single value from an array
+
+    assert(sum === 10, “The sum of the first four numbers is 10”);
+
+The reduce method takes an initial value (in this case, 0) and calling the callback function on each array item with the result of the previous callback invocation (or initial value) and the current array item as arguments
+… The result of the reduce invocation is the result of the last callback, called on the last array item.
+
+REUSING THE BUILT-IN ARRAY FUNCTIONS:
+
+There are times when we may want to create an object that contains a collection of data.
+
+If the collection was all that we were worried about, we could use an array. But in certain cases, there may be more state to store than just the collection itself — perhaps we need to store some sort of metadata regarding the collected items.
+
+Let’s examine the possibility of using a normal object and giving it the functionality we desire.
+
+Methods that know how to deal with collections already exist on the Array object; can we trick them into working on our own objects? Turns out yes:
+
+EXAMPLE OF SIMULATING ARRAY-LIKE METHODS:
+
+<body>
+    <input id=“first” />
+    <input id =“second” />
+
+    <script>
+        const elems = {
+            length: 0,
+            
+            //^^ Stores the count of the elements. The array needs a place to store the number of items it’s storing
+    
+            add: function (elem){
+                Array.prototype.push.call(this, elem);
+            },  
+
+            //^^ Implements the method to add elements to a collection. The prototype for Array has a method to do this, so why not use it instead of reinventing the wheel?
+            
+            gather: function(id){
+                this.add(document.getElementById(id));
+            },
+
+            //^^ Implements the gather method to find elements by their id values and add them to the collection
+
+            find: function(callback){
+                return Array.prototype.find.call(this, callback);
+            }
+
+            //^^ Implements the method to find elements in the collection. Similar to the add method, it reuses the existing find method accessible to arrays.
+
+        };
+
+        elems.gather(“first”);
+        assert(elems.length === 1 && elems[0].nodeType,
+            “Verify that we have an element in our stash”);
+
+        elems.gather(“second”);
+        assert(elems.length === 2 && elems[1].nodeType,
+            “Verify the other insertion”);
+
+        elems.find( elems => elem.id === “second”);
+        assert( found && found.id === “second”,
+            “We’ve found our element”);
+
+    </script>
+</body>
+
+
+In this example, we create a “normal” object and instrument it to mimic some of the behaviors of an array
+
+First we define a length property to record the number of elements that are stored, just like an array.
+
+Then we define a method to add an element to the end of the simulated array, calling the method add.
+
+Rather than write our own code, we can use a native method of JS arrays: Array.prototype.push
+
+Normally, the Array.prototype.push would operate on its own array via its function context. But here, we’re tricking the method to use our object as its context by using the call method and forcing our object to be the context of the push method.
+
+The push method, which increments the length property (thinking that its the length of the array), adds a numbered property to the object referencing the passed element. 
+
+The add method expects an element reference to be passed for storage. 
+
+We also define a convenience method, gather, that looks up the element by its id value and adds it to storage.
+
+Finally we define a find method that lets us find an arbitrary item in our custom object, by taking advantage of the built-in array find method.
+
+    find: function(callback) {
+        return Array.prototype.find.call(this, callback);
+    }
+
+The borderline nefarious behavior we demonstrated not only reveals the power that malleable function context give us, but also shows how we can be clever in reusing code that’s already written, instead of reinventing the wheel
