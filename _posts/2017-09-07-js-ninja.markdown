@@ -1,0 +1,85 @@
+---
+layout: post
+title:  "Key Equality in Javascript"
+date:   2017-09-07 12:00:01-0400
+---
+Here's an example of key equality in Javascript:
+
+    const map = new Map();
+    const currentLocation = location.href;
+
+^^Uses the built in location.href property to get the current page URL
+
+    const firstLink = new URL(currentLocation);
+    const secondLink = new URL(currentLocation);
+
+^^ Creates two links to current page
+
+    map.set(firstLink, {description: “firstLink”});
+    map.set(secondLink, {description: “secondLink”});
+
+^^ Adds a mapping for both links
+
+    assert(map.get(firstLink).description === “firstLink”,
+        “First link mapping”);
+    assert(map.get(secondLink).description === “secondLink”,
+        “Second link mapping”);
+    assert(map.size === 2, “There are two mappings”);
+
+^^ Each link gets its own mapping, even though they point to the same page
+
+***We use a Map to assign links to the object containing a description: string, key: value
+
+We have created two different objects for which we create two different mappings. But notice that the two URL objects, even though they’re separate objects, still point to the same URL location: the location of the current page.
+
+In JS, we can’t overload the equality operator, and the two objects, even though they have the same content are always considered different.
+
+ITERATING OVER MAPS
+
+So far, you’ve seen some of the advantages of maps: 
+1. You can be sure they contain only items that you put in them
+2. You can use anything as a key
+
+Because maps are collections, there’s nothing stopping us from iterating over them with for…of loops
+
+Remember, we used the for…of loop to iterate over values created by generators. You’re also guaranteed that these values will be visited in the order in which they were inserted (something we can’t rely on when iterating over objects using the for…in loop)
+
+EXAMPLE OF ITERATING OVER MAPS
+
+    const directory = new Map();
+
+^^ Creates a new map, just as we’ve done so far
+
+    directory.set(“Yoshi”, “81 11 1111”);
+    directory.set(“Kuma”, “81 22 2222”);
+    directory.set(“Hiro”, “81 33 3333”);
+
+^^ Creates a ninja directory that stores each ninja’s phone number
+
+    for (let item of directory) {
+        assert( item[0] !== null, “Key:” + item[0]);
+        assert( item[1] !== null, “Value:” + item[1]);
+    }
+
+^^ Iterates over each item in a directory using the for…of loop. Each item is a two-item array: a key and a value
+
+    for(let key of directory.keys()){
+        assert(key !== null, “Key:” + key);
+        assert(directory.get(key) != null, 
+            “Value:” + directory.get(key) );
+    }
+
+^^ We can also iterate over keys using the built-in keys method
+
+    for (var value of directory.values()){
+        assert(value !== null, “Value:” + value);
+    }
+
+^^ … and over values using the built-in values method
+
+Again, once we’ve created a mapping, we can easily iterate over it using the for…of loop:
+
+    for (var item of directory) {
+        assert(item[0] !== null, “Key:” + item[0]);
+        assert(item[1] !== null, “Value:” + item[1]);
+    }
