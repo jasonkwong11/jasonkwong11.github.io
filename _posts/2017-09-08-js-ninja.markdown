@@ -1,0 +1,53 @@
+---
+layout: post
+title:  "Javascript Sets"
+date:   2017-09-08 12:00:01-0400
+---
+In many real-world problems, we have to deal with collections of distinct items (meaning each item can’t appear more than once) called sets. Up to ES6, this was something you had to implement yourself by mimicking sets with standard objects. Because with maps, you can’t really store objects — only strings and numbers — and there’s always the risk of accessing prototype objects. The corner stone of creating sets is the newly introduced constructor function named Set:
+
+EXAMPLE OF CREATING A SET:
+
+    const ninjas = new Set([ “Kuma”, “Hattori”, “Yagyu”, “Hattori”]);
+
+^^ The Set constructor can take an array of items with which the set is initialized
+
+    assert(ninjas.has(“Hattori”), “Hattori is in our set”);
+    assert(ninjas.size === 3, “There are only three ninjas in our set”);
+
+^^ Discards any duplicate items.
+
+    assert(!ninjas.has(“Yoshi”), “Yoshi is not in, yet..”);
+    ninjas.add(“Yoshi”);
+
+    assert(ninjas.has(“Yoshi”), “Yoshi is added”);
+    assert(ninjas.size === 4, “There are four ninjas in our set!”);
+
+^^ We can add new items that aren’t already contained in the set
+
+    assert(ninjas.has(“Kuma”), “Kuma is already added”);
+    ninjas.add(“Kuma”);
+    assert(ninjas.size === 4, “Adding Kuma again has no effect”);
+
+^^ adding existing items has no effect
+
+    for (let ninja of ninjas) {
+        assert(ninja !== null, ninja);
+    }
+
+^^ Iterates through the set with a for…of loop
+
+**You can use the the built-in Set constructor to create a new ninjas set that will contain distinct ninjas. If we don’t pass in any arguments, an empty set is created. We can also pass in an array which pre-fills the set.
+
+REMEMBER: Sets are collections of unique items, and their primary purpose is to stop us from storing multiple occurrences of the same object.
+
+… In this case, this means “Hattori”, which we tried to add twice, is added only once
+
+**The HAS method checks whether an item is contained in the set: ninjas.has(“Hattori”)
+
+*** The ADD method is used to add unique items to the set: ninjas.add(“Yoshi”)
+
+*** The SIZE method lets you check how many items are in a set
+
+*** Similar to maps and arrays, sets are collections, so we can iterate over them with a for…of loop.
+
+***The items are always iterated over in the order in which they were inserted
