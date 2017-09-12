@@ -1,0 +1,70 @@
+---
+layout: post
+title:  "Operating on Sets: Union, Intersection, Difference"
+date:   2017-09-12 12:00:01-0400
+---
+A union of two sets, A and B, creates a new set that contains all elements from both A and B. Naturally, each item can’t occur more than once in the new set
+
+EXAMPLE OF USING SETS TO PERFORM A UNION OF COLLECTIONS:
+
+    const ninjas = [“Kuma”, “Hattori”, “Yagyu”];
+    const samurai = [“Hattori”, “Oda”, “Tomoe”];
+
+^^ Creates an array of ninjas and samurai. Notice that Hattori is both a ninja and a samurai
+
+    const warriors = new Set([ … ninjas, … samurai]);
+
+^^ Creates a new set of warriors by spreading ninjas and samurai
+… merges the two arrays into one array with the spread operator
+… then creates a set from the merged array. This will remove all duplicates!
+
+==> All the ninjas and samurai are included in the new warriors set.
+==> There are no duplicates in the new set. Even though Hattori is in both the ninjas and samurai sets, he is included only once.
+
+INTERSECTION OF SETS
+
+The intersection of two sets, A and B, creates a set that contains elements of A that are also in B.
+
+EXAMPLE OF THE INTERSECTION OF SETS
+
+    const ninjas = new Set([“Kuma”, “Hattori”, “Yagyu”]);
+    const samurai = new Set([“Hattori”, “Oda”, “Tomoe”]);
+
+    const ninjaSamurais = new Set (
+        […ninjas].filter(ninja => samurai.has(ninja))
+    );
+
+^^ Uses the spread operator to turn our set into an array so we can use the array’s filter method to keep only ninjas the are contained in the samurai set
+
+    assert(ninjaSamurais.size === 1, “There’s only one ninja samurai”);
+    assert(ninjaSamurai.has(“Hattori”), “Hattori is his name”);
+
+^^ Create a new set that contains only ninjas who are also samurai. We do this by taking advantage of the array’s filter method, which: creates a new array that contains only the items that match a certain criterion.
+
+In this case, the criterion is that the ninja is also a samurai.
+
+Because the filter method can only be used on arrays, we have to turn the ninjas set into an array by using the spread operator.
+
+DIFFERENCE OF SETS:
+
+The difference of two sets, A and B, contains all elements that are in set A but are not in set B. As you might guess, this is similar to the intersection of sets, with one significant difference:
+** WE WANT TO FIND ONLY TRUE NINJAS (NOT THOSE WHO ALSO MOONLIGHT AS SAMURAI)
+
+EXAMPLE OF DIFFERENCE OF SETS:
+
+    const ninjas = new Set([“Kuma”, “Hattori”, “Yagyu”]);
+    const samurai = new Set([“Hattori”, “Oda”, “Tomoe”]);
+
+    const pureNinjas = new Set(
+        […ninjas].filter(ninja => !samurai.has(ninja))
+    );
+
+^^ With set difference, we care only about ninjas who are not samurai!!
+
+*** Remember you can use the spread operator to turn a set into an array
+
+    assert(pureNinjas.size === 2, “There’s only one ninja samurai”);
+    assert(pureNinjas.has(“Kuma”), “Kuma is a true ninja”);
+    assert(pureNinjas.has(“Yagyu”), “Yagyu is a true ninja”);
+
+The only change is to specify that we care only about the ninjas who are not also samurai, by putting an exclamation mark (!) before the samurai.has(ninja) expression.
