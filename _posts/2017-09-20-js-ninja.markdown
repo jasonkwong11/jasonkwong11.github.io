@@ -1,0 +1,43 @@
+---
+layout: post
+title:  "Regex and You"
+date:   2017-09-20 12:00:01-0400
+---
+Regular expressions are a necessity of modern development. There, we said it. Frequently, something that might take a half-screen of code can be distilled down to a single statement with the proper use of regular expressions. Regex trivializes the process of tearing apart strings and looking for information. Everywhere you look in mainstream JS libraries, you’ll see the prevalent use of regex for various spot tasks:
+
+-Manipulating strings of HTML nodes
+-Locating partial selectors within a CSS selector expression
+-Determining whether an element has a specific class name
+-Input validation
+-And more
+
+WHY YOU SHOULD USE REGEX:
+
+Imagine you have to check for a zip code. Instead of this:
+
+    function isThisAZipCode(candidate){
+        if (typeof candidate !== “string” ||
+            candidate.length != 10) return false;
+
+        for (let n = 0; n < candidate.length; n++){
+            let c = candidate[n];
+
+            switch(n) {
+                case 0: case 1: case 2: case 3: case 4: case 6: case 7: case 8: case 9:
+                    if (c < ‘0’ || c > ‘9’) return false;
+                    break;
+                case 5:
+                    if (c != ‘-’) return false;
+                    break;
+            }
+        }
+        return true;    // If all succeeds, we’re good!
+    }
+
+Use Regex:
+
+    function isThisAZipCode(candidate){
+        return /^\d{5}-\d{4}$/.test(candidate);
+    }
+
+Instead of checking the position of the character within the string, we can replace it with a much more succinct regex pattern (despite it being esoteric).
