@@ -1,0 +1,227 @@
+---
+layout: post
+title:  "Regex Refresher I"
+date:   2017-09-22 12:00:01-0400
+---
+A regular expression is a way to express a pattern for matching strings of text. In JS, as with most other object types, we have two ways to create a regex:
+
+1. Via a regex literal
+2. By constructing an instance of a RegEx object
+
+If we want to create a mundane regex that matches the string test exactly, we could do so with a regex literal:
+
+    const pattern = /test/;
+
+Alternatively, we could construct a RegEx instance, passing the regex as a string:
+
+    const pattern = new RegExp(“test”);
+
+**Note: the literal syntax is preferred when the regex is known at development time, and the constructor approach is used when the regex is constructed at runtime by building it up dynamically in a string
+
+One of the reasons the literal syntax is preferred over expressing regexes in a string is that the backslash character plays an important part in regular expressions. 
+
+But the backslash character is also the escape character for string literals, so to express a backslash within a string literal, we need to use a double backslash (\\).
+    … this makes a regex even more odd looking when expressed within strings
+
+In addition to the expression itself, five flags can be associated with a regex:
+
+i — Makes the regex case-insensitive, so /test/i matches not only test, but also Test, TEST, tEsT, etc.
+g — Matches all instances of the pattern, as opposed to the default of local, which matches only the first occurrence. 
+m — Allows matches across multiple lines, as might be obtained from the value of a textarea element
+y — Enables sticky matching. A regular expression performs sticky matching in the target string by attempting to match from the last match position
+u — Enables the use of Unicode point escapes (\u{…})
+
+These flags are appended to the end of the literal (for example, /test/ig) or passed in as a string to the second parameter to the RegEx constructor (new RegExp(“test”, “ig”))
+
+TERMS AND OPERATORS:
+
+Regular expressions, like most other expressions we’re familiar with, are made up of terms and operators that qualify those terms. In the sections that follow, you’ll see how these terms and operators can be used to express patterns:
+
+EXACT MATCHING
+
+Any character that’s not a special character or operator must appear literally in the expression. For example, in our /test/ regex, four terms represent characters that must appear literally in a string for it to match the expressed pattern.
+
+Placing such characters one after the other implicitly denotes an operation that means followed by. So /test/ means t followed by e followed by s followed by t.
+
+MATCHING FROM A CLASS OF CHARACTERS:
+
+Many times, we won’t want to match a specific literal character, but a character from a finite set of characters. We can specify this with the set operator (also called the character class operator) by placing the set of characters that we want to match in square brackets: [abc].
+
+The preceding example signifies that we want to match any of the characters a, b, or c.
+
+Even though this expression spans five characters (three letters and two brackets), it matches only a single character in the candidate string.
+
+Other times, we want to match anything but a finite set of characters. we can specify this by placing a caret character (^) right after the opening bracket of the set operator: [^abc]
+** This changes the meaning to any character BUT a, b, or c
+
+This one more invaluable variation to the set operation: the ability to specify a range of values.
+For example, if we want to match any one of the lowercase characters between a and m, we could write [abcdefghijklm], or we can express that much more succinctly as follows: [a-m].
+
+The dash indicates that all characters from a through m inclusive (and lexicographically) are included in the set.
+
+ESCAPING
+
+Not all characters represent their literal equivalent. Certainly all of the alphabetic and decimal digit characters represent themselves, but as you’ll see, special characters such as $ and the period (.) represent either matches to something other than themselves, or operators that qualify the preceding term.
+
+HOW TO SPECIFY THAT WE WANT TO MATCH A LITERAL SPECIAL CHARACTER?
+-for example: [ or $ or ^
+==> Within a regex, the backslash character escapes whatever character follows it, making it a literal match term. So \[ specifies a literal match to the [ character, rather than the opening character class expression.
+… A double backslash \\ matches a single backslash
+
+BEGINS AND ENDS
+
+Frequently we may want to ensure that a pattern matches at the beginning of a string, or perhaps at the end of a string. 
+
+The caret character, when used as the first character of the regex, anchors the match at the beginning of the string, such that /^test/ matches only if the substring test appears at the beginning of the string being matched.
+    … Note that this is an overload of the ^ character, because it’s also used to negate a character class set.
+
+Similarly the dollar sign signifies that the pattern must appear at the end of of the string:
+
+    /test$/
+
+using both ^ and $ indicates that the specified pattern must encompass the entire candidate string:
+
+    /^test$/
+
+REPEATED OCCURRENCES:
+
+If we want to match a series of four a characters, we might express that with /aaaa/, but what if we want to match any number of the same character?
+
+Regular expressions enable us to specify several repetition options:
+
+* To specify that a character is optional (it can appear either once or not at all), follow it with ?. For example, /t?est/ matches both test and est.
+
+* To specify that a character should appear one or many times, use +, as in /t+est/, which matches test, ttest, and tttest, but not est
+
+*To specify that the character appears zero, one, or many times, use *, as in /t*est/, which matches test, ttest, tttest, and est.
+
+*To specify a fixed number of repetitions, indicate the number of allowed repetitions between braces. For example, /a{4}/ indicates a match on four consecutive a characters.
+
+*To specify a range for the repetition count, indicate the range with a comma separator. For example, a /a{4,10}/ matches any string of 4 through 10 consecutive a characters
+
+*To specify an open-ended range, omit the second value in the range (but leave the comma). The regex /a{4,}/ matches any string of four or more consecutive a characters
+
+Any of these repetition operators can be greedy or nongreedy. By default, they’re greedy: they will consume all the possible characters that make up a match. Annotating the operator with a ? character (an overload of the ? operator), as in a+?, makes the operation nongreedy: 
+
+For example, if we’re matching against the string aaa, the regular expression /a+/ would match all three a characters, whereas the nongreedy expression /a+?/ would match only one a character, because a single a character is all that’s needed to satisfy the a+ term.
+
+PREDEFINED CHARACTER CLASSES:
+
+Some characters that we might want to match are impossible to specify with literal characters (for example, control characters such as a carriage return)
+
+In addition, we might want to match character classes, such as decimal digits, or a set of whitespace characters. The regex syntax provides predefined terms that represent these characters or commonly used classes so that we can use control-character matching in our regular expressions and don’t need to resort to the character class operator for commonly used sets of characters.
+
+GROUPING:
+
+So far you’ve seen that operators (such as + and *) affect only the preceding term. If we want to apply the operator to a group of terms, we can use parentheses for groups, just as in a mathematical expression.
+
+For example, /(ab)+/ matches one or more consecutive occurrences of the substring ab.
+
+When a part of a regex is grouped with parentheses, it serves double duty, also creating what’s known as a capture. See section 10.4.
+
+ALTERNATION (OR)
+
+Alternatives can be expressed using the pipe (|) character. For example: /a|b/ matches either a or b. And /(ab) + | (cd)/ matches one or more occurrences of ab or cd .
+
+BACKREFERENCES:
+
+The most complex terms we can express in regex are back references to captures defined in the regex. Basically, captures are portions of a candidate string that are successfully matched against terms in the regex.
+… the notation is: \1, \2, \3, etc.
+
+One example is: 
+
+/^([dtn])a\1/
+
+This matches a string that starts with any of the d, t, or n characters, followed by an a, followed by whatever character matches the first capture.
+    … this latter point is important
+    … this isn’t the same as /[dtn] a[dtn]/.
+
+The character following the a can’t be any of d, or t, or n, but must be whichever one of those triggers the match for the first character.
+
+As such, which character the \1 will match can’t be known until evaluation time. 
+
+A good example of where this might be useful is in matching XML-type markup elements:
+
+/<(\w+)>(.+)<\/\1>/
+
+This allows us to match simple elements such as <strong> whatever </strong>. Without the ability to specify a back reference, this wouldn’t be possible, because we’d have no way to know what closing tag would match the opening tag ahead of time.
+
+COMPILING REGULAR EXPRESSIONS
+
+Regular expressions go through multiple phases of processing, and understanding what happens during each phase can help us optimize JS code that uses regex. The two main phases are compilation and execution.
+
+1. Compilation: occurs when the regex is first created. 
+    … during compilation, the expression is parsed by the JS engine and converted into its internal representation. 
+    … this phase of parsing and conversion must occur every time a regex is created (discounted any internal optimizations performed by the browser)
+
+2. Execution occurs when we use the compiled regex to match patterns in a string.
+    For complex expressions, in particular, we can begin to get some noticeable speed improvements by predefining (and thus precompiling) our regular expressions for later use
+
+EXAMPLE OF TWO WAYS TO CREATE A COMPILED REGULAR EXPRESSION:
+
+    const re1 = /test/i;
+
+^^ Creates regex via a literal
+
+    const re2 = new RegExp(“test”, “i”);
+
+^^ Creates a regex via the constructor
+
+    assert(re1.toString() === “/test/i”,
+        “Verify the contents of the expression”);
+    assert(re1.test(“TesT”), “Yes it’s case-insensitive.”);
+    assert(re2.test(“TesT”), “This one is too.”);
+    assert(re1.toString() === re2.toString(),
+        “The regular expression are equal.”);
+    assert(re1 !== re2, “But they are different objects.”);
+
+^^ Both regex are in their compiled state after creation. If we were to replace every reference would be compiled time and time again, so compiling a regex once and storing it in a variable for later reference can be an important optimization.
+
+… note that each regex has a unique object representation: every time a regex is created (and thus compiled), a new regex object is created.
+
+==> this is unlike other primitive types (such as string, number, etc.) because the result will always be unique
+
+When you use the constructor: new RegExp(…) to create a regex, you can build and compile an expression from a string we can dynamically create at runtime. This can be immensely useful for constructing complex expressions that will be heavily reused.
+
+Let’s say that we want to determine which elements within a document have a particular class name, whose value we won’t know until runtime. Because elements are capable of having multiple class names associated with them (inconveniently stored in a space-delimited string), this serves as an example:
+
+EXAMPLE OF COMPILING A RUNTIME EXPRESSION FOR LATER USE:
+
+    <div class=“samurai ninja”></div>
+    <div class=“ninja samurai”></div>
+    <div></div>
+    <span class=“samurai ninja ronin”></span>
+
+Creates test subjects of various elements with various class names
+
+    <script>
+        function findClassInElements(className, type){
+            const elems = document.getElementsByTagName( type || “*”);
+
+            //^^ collects elements by type
+
+            const regex = new RegExp(“(^|\\s)” + className + “(\\s|$)”);
+            
+            // ^^ compiles a regex using the passed class name
+
+            const results = [];
+
+            //^^ stores the results
+
+            for (let i = 0, length = elems.length;  < length; i++)
+                if (regex.test(elems[i].className)){
+                    results.push(elems[i]);
+                }
+
+            //^^ tests for regex matches
+        
+            return results;
+        }
+
+        assert(findClassInElements(“ninja”, “div”).length === 2,
+            “The right amount of div ninjas was found”);
+        assert(findClassInElements(“ninja”, “span”).length === 1,
+            “The right amount of span ninjas was found”);
+        assert(findClassInElements(“ninja”).length === 3,
+            “The right amount of ninjas was found”);
+    </script>
