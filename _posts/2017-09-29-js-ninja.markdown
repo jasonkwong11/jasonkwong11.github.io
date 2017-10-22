@@ -1,0 +1,172 @@
+---
+layout: post
+title:  "Using Regex for Common Problem"
+date:   2017-09-29 12:00:01-0400
+---
+The height of usefulness with respect to regex is realized when we capture the results that are found so that we can do something with them. Determining whether a string match a pattern is an obvious first step, and often all we need. But determining what was matched is also useful in many situations
+
+Performing simple captures:
+
+Replacing Using Functions:
+
+The replace method of the String object is a powerful and versatile method, which we saw used briefly in our discussion of captures. When a regex is provided as the first parameter to replace, it will cause a replacement on a match or matches if the regex is global to the pattern rather than on a fixed string.
+
+E.g: let’s say we want to replace all uppercase characters in a string with X:
+
+“ABCDEfg”.replace(/[A-Z]/g, “X”); This results in the value of XXXXXfg.
+
+The most powerful feature presented by replace is the ability to provide a function as the replacement value rather than a fixed string.
+
+When the replacement value, the second argument is a function, it’s invoked for each match found (remember that a global search will match all instances of pattern in the source string) with a variable list of parameters:
+    1. The full text of the match
+    2. The captures of the match within the original string
+    3. The source string.
+
+The value returned from the function serves as the replacement value.
+
+..This provides a tremendous amount of leeway to determine what the replacement string should be at runtime, with lots of information regarding the nature of the match at our fingertips.
+
+For example: we use the function to provide a dynamic replacement value for converting a string with words separated by dashes to its camel-cased equivalent:
+
+EXAMPLE OF CONVERTING A DASHED STRING TO CAMEL CASE:
+
+    function upper(all, letter) { return letter.toUpperCase(); }
+
+    //^^ converts to uppercase
+
+    assert(“border-bottom-width”.replace(/-(\w)/g, upper)
+        === “borderBottomWidth”,
+        “Camel cased a hyphenated string.”);
+
+    //^^ matches dashed characters
+
+Here, we provide a regex that matches any character preceded by a dash character. A capture in the global regex identifies the character that was matched ( without the dash). Each time the function is called, it’s passed the full match string as the first argument, and the capture (only one for this regex) as the second argument.
+
+EXAMPLE OF A TECHNIQUE FOR COMPRESSING A QUERY STRING:
+
+    function compress(source){
+        const keys = {};
+
+        //^^ stores the located keys
+
+        source.replace(
+            /([^=&]+)=([^&]*)/g,
+            function(full, key, value){
+
+            //^^ extracts key-value info
+            
+                keys[key] = 
+                    (keys[key] ? keys[key] + “,” : “”) + value;
+                return “”;
+            }
+        );
+        const result = [];
+        for (let key in keys) {
+            result.push(key + “=” + keys[key]);
+        }
+
+        //^^ collects key info
+
+        return result.join(“&”);
+
+        //^^ joins results with &
+    }
+
+    assert(compress(“foo=1&foo=2&blah=a&blah=b&foo=3”) ===
+        “foo=1,2,3&blah=a,b”,
+        “Compression is OK!”);
+
+
+The most interesting aspect of this example is its use of the string replace method as a means of traversing a string for values, rather than as a search-and-replace mechanism.
+
+The trick is twofold: passing in a function as the replacement value argument, and instead of returning a value, using it as a means of searching.
+
+The result isn’t only fast, but also simple and effective. The level of power that this technique provides, especially in light of the small amount of code necessary, shouldn’t be underestimated.
+
+SOLVING COMMON PROBLEMS WITH REGULAR EXPRESSIONS:
+
+1.) MATCHING NEWLINES:
+
+When performing a search, it’s sometimes desirable for the period (.) term, which matches any character except for newline, to also include newline characters. Regex implementations in other languages frequently include a flag for making this possible, but JS’s implementation doesn’t.
+
+EXAMPLE OF MATCHING ALL CHARACTERS, INCLUDING NEWLINES:
+
+    const html = “<b>Hello</b>\n<i>world!</i>”;
+
+    //^^ defines a test subject
+
+    assert(/.*/.exec(html)[0] === “<b>Hello</b>”,
+        “A normal capture doesn’t handle endlines.”);
+
+    //^^ shows that newlines aren’t matched
+
+    assert(/[\S\s]*/.exec(html)[0] ===
+        “<b>Hello</b>\n<i>world</i>”,
+        “Matching everything with a character set.”);
+
+    //^^ Matches all using whitespace matching
+
+    assert(/(?:.|\s)*/.exec(html)[0] ===
+        “<b>Hello</b>\n<i>world!</i>”,
+        “Using a non-capturing group to match everything”);
+
+    //^^ matches all using alteration
+
+We define a test string, containing a newline. Then we try various ways of matching all the characters in the string.
+
+In the first test, we verify that newlines aren’t matched by the . operator. Ninjas won’t be denied, so…
+
+In the next test we get our way with an alternative regex, /[\S\s]*/, in which we define a character class that matches anything that’s not a whitespace character and anything that IS a whitespace character. This union is the set of all characters
+
+In the next test, we use an alternation regex, /(?:.|\s)*/, in which we match everything matched by ., which is everything but newline, and everything considered whitespace, which includes newline.
+
+… The resulting union is the set of all characters including newlines.
+… Note the use of a passive subexpression to prevent any unintended captures
+
+^^ Because of it’s simplicity (and implicit speed benefits), the solution provided by /[\S\s]*/ is generally considered optimal.
+
+MATCHING UNICODE:
+
+Frequently in the use of regex, we want to match alphanumeric characters, such as an ID selector in a CSS selector engine implementation.
+
+But assuming that the alphabetic characters will be from only the set of English ASCII characters is short sighted.
+
+Expanding the set to include Unicode characters is sometimes desirable, explicitly supporting multiple languages not covered by the traditional alphanumeric character set.
+
+EXAMPLE OF MATCHING UNICODE CHARACTERS:
+
+    const text = “\u5FCD\u8005\u30D1\u30EF\u30FC”
+    const matchAll = /[\w\u0080-\uFFFF_-]+/;
+
+    //^^ matches all, including Unicode.
+
+    assert(text.match(matchAll), “Our regex matches non-ASCII”);
+
+This listing includes the entire range of Unicode characters in the match by creating a character class that includes the \w term, to match all the “normal” word characters, plus a range that spans the entire set of Unicode characters above U+0080. Starting at 128 gives us some high ASCII characters along with all Unicode characters in the Basic Multilingual Plane.
+
+ANOTHER COMMON JS ISSUE: MATCHING ESCAPED CHARACTERS:
+
+It’s common for page authors to use names that conform to program identifiers when assigning id values to page elements, but that’s just a convention; id values can contain characters other than “word” characters, including punctuation.
+
+For example, a week developer might use the id value, form:update for an element.
+
+This allows the user to specify complex names that don’t conform to typical naming conventions. So let’s develop regex that will allow matching escaped characters:
+
+EXAMPLE OF MATCHING ESCAPED CHARACTERS IN A CSS SELECTOR:
+
+    const pattern = /^((\w+)|(\\.))+$/;
+
+    //^^ this regex allows any sequence composed of word characters, a backslash followed by any character (even a backslash), or both.
+
+    const tests = [
+        “formUpdate”,
+        “form\\.update\\.whatever”,
+        “form\\:update”,
+        “\\f\\o\\r\\m\\u\\p\\d\\a\\t\\e”,
+        “form:update”
+    ];
+
+    //^^ sets up various test subjects. all should pass but the last, which fails to escape its nonword character (:)
+
+This particular expression works by allowing for a match of either a word character sequence or a sequence of a backslash followed by any character.
+
