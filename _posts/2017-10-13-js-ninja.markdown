@@ -4,9 +4,10 @@ title:  "ES6 Modules"
 date:   2017-10-13 12:00:01-0400
 ---
 THE MAJOR SHORTCOMING TO THE Pre-ES6 MODULE PATTERN (see previous post):
-… is the inability to share private module variables across module extensions.
-… countScrolls function is created in a completely different scope than the countClicks function… with a completely new set of private variables.
-.. countScrolls can’t access the numClicks and handleClick variables
+
+a.) is the inability to share private module variables across module extensions.
+b.) countScrolls function is created in a completely different scope than the countClicks function… with a completely new set of private variables.
+c.) countScrolls can’t access the numClicks and handleClick variables
 
 although this is a shortcoming, it’s not a showstopper, we can still use the module pattern to keep our JS applications modular
 
