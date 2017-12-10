@@ -1,0 +1,155 @@
+---
+layout: post
+title:  "Injecting and Converting HTML In the DOM"
+date:   2017-10-20 12:00:01-0400
+---
+If we open up a JS library, you’d notice the length and complexity of the code behind simple DOM operations… Why is this code so complex? Why do you need to understand how it works if the library will take care of it for you?
+
+==> The most compelling reason is performance. Understanding how DOM modification works in libraries can enable you to write better and faster code that uses the library or, alternatively enable you to use those techniques in your own code.
+
+So we’ll start by seeing how to create new parts of our pages, on demand by injecting arbitrary HTML.
+
+=== INJECTING HTML INTO THE DOM ===
+
+In this section, we’ll look at an efficient way to insert HTML into a document at any location, given that HTML as a string.
+
+We present this particular technique because it’s frequently used to create highly dynamic web pages in which the user interface is modified as a response to user actions or data incoming from the server.
+
+This is particularly useful for the following scenarios:
+
+    - Injecting arbitrary HTML into a page and manipulating and inserting client-side templates
+    - Retrieving and injecting HTML sent from a server
+
+It can be technically challenging to implement this functionality correctly (especially when compared to building an OO style DOM construction API, which is easier to implement but requires an extra layer of abstraction than injecting the HTML)
+
+We’ll implement our own way of doing clean DOM manipulation from scratch. The implementation requires the following steps:
+
+1. Convert an arbitrary but valid HTML string into a DOM structure.
+2. Inject the DOM structure into any location in the DOM as efficiently as possible.
+
+== CONVERTING HTML TO DOM ===
+
+Converting an HTML string to a DOM structure doesn’t involve a whole lot of magic. In fact, it uses a tool that you’re most likely already familiar with: the innerHTML property of DOM elements.
+
+Using it is a multistep process:
+
+    1. Make sure that the HTML string contains valid HTML code
+    2. Wrap the string in any enclosing markup that’s required by browser rules
+    3. Insert the HTML string, using innerHTML, into a dummy DOM element
+    4. Extract the DOM nodes back out
+
+The steps aresn’t overly complex but the actual insertion has some gotchas that we’ll need to take into account:
+
+1. Preprocessing the HTML source string:
+
+To start we’ll need to clean up the source HTML to meet our needs. For example, let’s take a look at a skeleton HTML that allows us to choose a ninja (through the option element) and that shows the details of the chosen ninja within a table, details that are intended to be added at a later point:
+
+Let’s start with solving the problem of self-closing elements. To support this feature, we can do a quick prepares on the HTML string to convert elements such as table/> to table> table/> (which will be handled uniformly in all browsers), as shown in the following listing:
+
+EXAMPLE OF MAKING SURE THAT SELF-CLOSING ELEMENTS ARE INTERPRETED CORRECTLY:
+
+    const tags = 
+        /^ (area | base | br | col | embed | hr | img | input) $/i;
+
+    //^^ uses a regex to match the tag name of any elements we don’t need to be concerned about.
+
+
+    function convert(html){
+        return html.replace(
+            /<(\w+)[^>]*?>\/>/g, (all, front, tag) => {
+            return tags.test(tag) ? all : 
+                front + “></” + tag + “>”;  
+        });
+    }
+
+    assert(convert(“<a/>”) === “<a></a>”, “Check anchor conversion”);
+    assert(convert(“<hr/>”) === “<hr/>”, “Check hr conversion”);
+
+This will fix the table tag. We still have to solve the problem that our option element aren’t contained within a select element. 
+
+HTML WRAPPING:
+
+Some HTML elements must be within certain container elements before they can be injected. For example, an option element must be contained within a select.
+
+We can solve this problem in two ways, both of which require constructing a mapping between problematic elements and their containers:
+
+1. The string could be injected directly into a specific parent by using innerHTML, where the parent has been previously constructed using the built-in document createElement. Although this may work in some cases and in some browsers, it isn’t universally guaranteed.
+
+2. The string could be wrapped with the appropriate required markup and then injected directly into any container element (such as a div). This is more foolproof but its also more work
+
+The second technique is preferred; it involves little browser-specific code.
+
+For an example of generating a list of DOM nodes from some markup, see PDF pg 334
+…its pretty cool: create a mapping, match the node in the map, then construct the strings
+
+INSERTING ELEMENTS INTO THE DOCUMENT:
+
+After we have the DOM nodes it’s time to insert them into the document. A couple of steps are required, and we’ll work through them in this section.
+
+Because we have an array of elements that we need to insert — potentially into any number of locations within the document — we want to try to keep the number of operations performed to a minimum.
+
+We can do this by using DOM fragments… DOM fragments are part of the W3C DOM specification and are supported in all browsers. This useful facility gives us a container to hold a collection of DOM nodes.
+
+This is quite useful, but it also has the advantage that the fragment can be injected and cloned in a single operation instead of having to inject and clone each individual node over and over again.
+    … has potential to dramatically reduce the number of operations required for a page.
+
+See PDF pg 335 to see how to use DOM fragments with previous getNodes function
+
+USING DOM ATTRIBUTES AND PROPERTIES
+
+When accessing the values of element attributes, we have two options: using the traditional DOM methods of getAttribute and setAttribute, or using properties of the DOM object that correspond to the attributes
+
+For example, to obtain the id of an element whose reference is stored in variable e, we could use either of the following:
+
+e.getAttribute(‘id’)
+e.id
+
+SEE PDF PAGE 337 FOR EXAMPLE OF ACCESSING ATTRIBUTE VALUES VIA DOM METHODS AND PROPERTIES:
+
+Basically:
+
+    script
+        document.addEventListener(“DOMContentLoaded”, () => {
+            const div = document.querySelector(“div”);
+
+            //^^ obtains an element reference
+
+            div.setAttribute(“id”, “ninja-1”);
+            assert(div.getAttribute(‘id’) === “ninja-1”,
+                “Attribute successfully changed”);
+
+            //^^ Changes the value of the id attribute with the setAttribute method and tests that the value has changed
+
+            div.id = “ninja-2”;
+            assert(div.id === “ninja-2”,
+                “Property successfully changed”);
+
+            //^^ Changes the value of the property and tests that the value has changed
+        
+            assert(div.getAttribute(‘id’) === “ninja-2”,
+                “Attribute successfully changed via property”);
+
+            //^^ Changing the property also changes the value obtained with getAttribute
+
+            div.setAttribute(“id”, “ninja-3”,
+                “Property successfully changed via attribute”);
+
+            //^^ Using setAttribute also changes the value obtained through the property.
+            
+        })
+    /script
+
+Not only did the property value change, but also the value of the id attribute. From this we learn that the id property and id attribute are somehow linked together. Changing the id property value also changes the id attribute value.
+
+It also works the other way around: setting an attribute value also changes the corresponding property value
+
+But don’t let this fool you into thinking that property and attribute are sharing the same value — they aren’t. We’ll see later in this chapter that the attribute and corresponding property, although linked, aren’t always identical.
+
+It’s important to note that not all attributes are represented by element properties. Although it’s generally true for attributes that are natively specified by the HTML DOM
+
+… custom attributes that we may place on the elements in our pages don’t automatically become represented by element properties.
+… To access the value of a custom attribute, we need to use the DOM methods getAttribute() and setAttribute().
+
+If you’re not sure whether a property for an attribute exists, you can always test for it and fall back to the DOM methods if it doesn’t exist:
+
+    const value = element.someValue ? element.someValue : element.getAttribute(‘someValue’);
