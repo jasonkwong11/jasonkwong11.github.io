@@ -37,7 +37,7 @@ Defining Module Interfaces — Implementing module internals through function va
 
 FUNCTIONS AS MODULES:
 
-    Calling a function creates a new scope that we can use to define variables that won’t be visible from outside the current function
+Calling a function creates a new scope that we can use to define variables that won’t be visible from outside the current function
 
 EXAMPLE:
 
@@ -60,7 +60,7 @@ Two Important Things to Notice:
 ^^The numClicks variable is kept alive through the closure of the click handler function.
     … the variable can be referenced only within the handler and nowhere else!
 
-    … we’ve shield the numClicks variable from code outside the countClicks function, at the same time not polluting the global namespace of our program
+… we’ve shield the numClicks variable from code outside the countClicks function, at the same time not polluting the global namespace of our program
 
 2.)
 Our countClicks function is called only in this one place, so instead of defining a function and then calling it in a separate statement, we’ve used an IIFE, to define and immediately invoke the countClicks function
