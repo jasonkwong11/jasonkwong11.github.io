@@ -1,0 +1,176 @@
+---
+layout: post
+title:  "Code Modularization Techniques"
+date:   2017-10-06 12:00:01-0400
+---
+As our applications start to grow, problems related to how we structure and manage our code start to emerge. Time and time again, it’s proven that large monolithic code bases are far more likely to be difficult to understand and maintain than smaller, well-organized ones.
+
+… So We improve the structure and organization by breaking them into smaller, relatively loosely coupled segments called modules.
+
+Forming consistent abstractions and encapsulate implementation details makes it easier to reason about our application, because we aren’t bothered with various frivolous details when using our module functionality.
+
+In addition, having modules means that we can easily reuse module functionality in different parts of our application.
+
+=== MODULARIZING CODE IN PRE-ES6 JAVASCRIPT ===
+
+Pre-ES6 JS has only two types of scopes: global scope and function scope. It doesn’t have something in between, a namespace or a module that would allow us to group certain functionality together. To write modular code, JS developers are forced to be creative with existing JS language features.
+
+When deciding which features to use, we have to keep in mind that at a bare minimum, each module system should be able to do the following:
+
+1. Define an interface through which we can access the functionality offered by the module
+
+2. Hide module internals so that the users of the module aren’t burdened with a whole host of unimportant implementation details
+    … In addition, by hiding module internals, we protect those internals from the outside world, thereby preventing unwanted modifications that can lead to all sorts of side effects and bugs
+
+USING OBJECTS, CLOSURES, AND IMMEDIATE FUNCTIONS TO SPECIFY MODULES
+
+Let’s go back to our minimal module system requirements: hiding implementation details and defining module interfaces.
+    
+Hiding Module Internals — As we already know, calling a JS function creates a new scope in which we can define variables that are visible only within the current function. So one option for hiding module internals is using functions as modules.
+    … In this way, all function variables become internal module variables that are hidden from the outside world
+
+Defining Module Interfaces — Implementing module internals through function variables means that those variables are accessible from only within the module
+    … If our modules are to be used from other code, we have to be able to define a clean interface through which we can expose the functionality offered by the module
+        … one way of achieving this is by taking advantage of objects and closures.
+        … the idea is that, from our function module, we return an object that represents the public interface of our module.   
+        …that object should contain methods offered by the module, methods that will, through closures, keep alive our internal module variables, even after our module function has finished its execution
+
+FUNCTIONS AS MODULES:
+
+    Calling a function creates a new scope that we can use to define variables that won’t be visible from outside the current function
+
+EXAMPLE:
+
+    (function countClicks(){
+        let numClicks = 0;
+        
+        //^^ defines a local variable that will store click counts
+
+        document.addEventListener(“click”, () => {
+            alert( ++numClicks );
+            
+            //^^ whenever a user clicks, the counter is incremented and the current value reported
+
+        });
+    })();
+
+Two Important Things to Notice:
+
+1.) 
+^^The numClicks variable is kept alive through the closure of the click handler function.
+    … the variable can be referenced only within the handler and nowhere else!
+
+    … we’ve shield the numClicks variable from code outside the countClicks function, at the same time not polluting the global namespace of our program
+
+2.)
+Our countClicks function is called only in this one place, so instead of defining a function and then calling it in a separate statement, we’ve used an IIFE, to define and immediately invoke the countClicks function
+
+THE MODULE PATTERN: AUGMENTING FUNCTIONS AS MODULES WITH OBJECTS AS INTERFACES:
+
+The module interface is usually composed of a set of variables and functions that our module provides to the outside world… The easiest way to create such an interface is to use the humble JS object:
+
+EXAMPLE OF THE MODULE PATTERN:
+Let’s create an interface for our module that counts the clicks on our web page:
+
+    const MouseCounterModule = function(){
+
+    // ^^ creates a global module variable and assigns the result of immediately invoking a function
+
+        let numClicks = 0;
+
+        //^^ creates a “private” module variable
+
+        const handleClick = () => {
+            alert(++numClicks);
+        };
+
+        //^^ creates a “private” module function
+
+        return {
+            countClicks: () => {
+                document.addEventListener(“click”, handleClick);
+            }
+        };
+
+        //^^ returns an object that represents the module’s interface. Through closures, we can access “private” module variables and functions
+
+    }();
+
+From the outside, we can access the properties exposed through the interface.
+But we can’t access module internals.
+
+Here we use an immediate function to implement a module. Within the immediate function, we define our internal module implementation details: one local variable, numClicks, and one local function handleClick, that are accessible only within the module. 
+
+Next, we create and immediately return an object that will serve as the module’s “public interface”. This interface contains a countClicks method that we can use from outside the module to access module functionality.
+
+At the same time, because we’ve exposed a module interface, our internal module details are kept alive through closures created by the interface… for example, in this case, the countClicks method of the interface keeps alive internal module variables numClicks and handleClick.
+
+Finally we store the object that represents the module interface, returned by the immediate function, into a variable named MouseCounterModule, through which we can easily consume module functionality, by writing the following code:
+
+MouseCounterModule.countClicks();
+
+By taking advantage of immediate functions, we can hide certain module implementation details. Then by adding objects and closures into the mix, we can specify a module interface that exposes the functionality provided by our module to the outside world
+
+THIS PATTERN OF USING IMMEDIATE FUNCTIONS, OBJECTS, AND CLOSURES TO CREATE MODULES IN JS IS CALLED THE MODULE PATTERN …POPULARIZED BY DOUGLAS CROCKFORD 
+
+Once we have the ability to define modules, it’s always nice to be able to split them across multiple files (in order to more easily manage them) or to be able to define additional functionality to existing modules, without modifying their source code…
+
+AUGMENTING MODULES
+
+Let’s augment our MouseCounterModule with an additional feature of counting the number of mouse scrolls, but without modifying the original MouseCounterModule code:
+
+EXAMPLE OF AUGMENTING MODULES:
+
+    const MouseCounterModule = function(){
+
+    // ^^ creates a global module variable and assigns the result of immediately invoking a function
+
+        let numClicks = 0;
+
+        //^^ creates a “private” module variable
+
+        const handleClick = () => {
+            alert(++numClicks);
+        };
+
+        //^^ creates a “private” module function
+
+        return {
+            countClicks: () => {
+                document.addEventListener(“click”, handleClick);
+            }
+        };
+
+        //^^ returns an object that represents the module’s interface. Through closures, we can access “private” module variables and functions
+
+    }();
+
+
+    //^^ The original MouseCounterModule
+
+    (function(module){
+
+    //^^ immediately invokes a function that accepts the module we want to extend as an argument
+
+        let numScrolls = 0;
+
+        const handleScroll = () => {
+            alert(++numScrolls);
+        }
+
+        //^^ defines new private variables and functions
+            
+        module.countScrolls = () => {
+            document.addEventListener(“wheel”, handScroll);
+        };
+
+        //^^ Extends the module interface
+
+    })(MouseCounterModule);
+
+    //^^ Passes in the module as an argument
+
+Now we can access initial module functionality with MouseCounterModule.countClicks.
+We can access augmented module functionality with MouseCounterModule.countScrolls
+
+When augmenting a module, we usually follow a procedure similar to creating a module. We immediately call a function, but this time, we pass to it to the module we want to extend as an argument
