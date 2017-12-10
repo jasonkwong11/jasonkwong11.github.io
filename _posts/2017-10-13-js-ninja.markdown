@@ -1,0 +1,238 @@
+---
+layout: post
+title:  "ES6 Modules"
+date:   2017-10-13 12:00:01-0400
+---
+THE MAJOR SHORTCOMING TO THE Pre-ES6 MODULE PATTERN (see previous post):
+… is the inability to share private module variables across module extensions.
+… countScrolls function is created in a completely different scope than the countClicks function… with a completely new set of private variables.
+.. countScrolls can’t access the numClicks and handleClick variables
+
+although this is a shortcoming, it’s not a showstopper, we can still use the module pattern to keep our JS applications modular
+
+Note: in the module pattern, modules are objects just like any other, and we can extend them in any way we find appropriate. For example, we can add new functionality by extending the module object with new properties:
+
+    MouseCounterModule.newMethod = () => { … }
+
+We can also use the same principle to easily create submodules:
+    
+    MouseCounterModule.newSubmodule = () => {
+        return { … };
+    }();
+
+Notice that all of these approaches suffer from the same fundamental shortcoming of the module pattern: Subsequent extensions of the module can’t access previously defined internal module details.
+
+Unfortunately there are more problems with the module pattern:
+
+1. When we start building modular applications, the modules themselves will often depend on other modules for their functionality.
+… Unfortunately the module pattern doesn’t cover the management of these dependencies
+… Although this isn’t a problem in small and medium applications, it can introduce serious issues in large applications that use a lot of interdependent modules
+
+To deal with these issues, a couple of competing standards have arisen, namely Asynchronous Module Definition (AMD) and CommonJS. But now we have a winning module standard in ES6.
+
+ES6 MODULES:
+
+ES6 modules are designed to marry the advantages of CommonJS and AMD:
+
+1. Similar to CommonJS, ES6 modules have relatively simple syntax, and ES6 modules are file based (one module per file)
+
+2. Similar to AMD, ES6 modules provide support for asynchronous module loading.
+
+NOTE: 
+-Built-in modules are a part of the ES6 standard. As you’ll see, the ES6 module syntax includes additional semantics and keywords (such as the export and import keywords) that aren’t supported by current browsers.
+… If we want to use modules today, we have to transpire our module code with Tracer, Babel, or TypeScript.
+… We can also use the SystemJS library, which supports loading all currently available module standards: AMD, CommonJS, and even ES6 modules
+
+The main idea behind ES6 modules is that only the identifiers explicitly exported from a module are accessible from outside that module. All other identifiers, even the ones defined in top-level scope (normally global scope in standard JS), are accessible from within the module.
+
+To provide this functionality, ES6 introduces two new keywords:
+    -export — for making certain identifiers available from outside the module
+    -import — for importing exported module identifiers
+
+^^ The syntax for exporting and importing module functionality is simple, but it has a lot of subtle nuances that we’ll explore slowly, step by step.
+
+EXPORTING AND IMPORTING FUNCTIONALITY:
+
+Let’s start with a simple example that shows how to export functionality from one module and export into another:
+
+EXAMPLE OF EXPORTING FROM A NINJA.JS MODULE:
+
+    const ninja = “Yoshi”;
+
+    //^^ defines a top-level variable in a module
+
+    export const message = “Hello”;
+
+    //^^ defines a variable and a function (below), and exports them from the module with the export keyword
+
+    export function sayHiToNinja(){
+        return message + “ “ + ninja;
+
+        //^^ access an inner module variable from the module’s public API
+    }
+
+
+Here’s an alternative way to export identifiers…
+
+EXAMPLE OF EXPORTING AT THE END OF A MODULE:
+
+    const ninja = “Yoshi”;
+    const message = “Hello”;
+
+    //^^ Specifies all module identifiers
+
+    function sayHiToNinja(){
+        return message + “ “ + ninja;
+    }
+
+    export { message, sayHiToNinja };
+
+    //^^ Exports some of the module identifiers
+
+This way of exporting module identifiers bears some resemblance to the the module pattern, as an immediate function returns an object that represents the public interface of our module, and especially to CommonJS, as we expand the module.exports object with the public module interface.
+
+EXAMPLE OF HOW TO IMPORT IDENTIFIERS FROM A MODULE:
+
+    import {message, sayHiToNinja } from “Ninja.js”
+
+    //^^ Uses the import keyword to import an identifier binding from a module
+
+    assert (message === “Hello”,
+        “We can access the imported variable”);
+    assert (sayHiToNinja() === “Hello Yoshi”,
+        “We can say hi to Yoshi from outside the module”);
+
+    //^^ We can now access the imported variable and call the imported function
+
+    assert(typeof ninja === “undefined”,
+        “But we cannot access Yoshi directly”);
+    //^^ We can’t access non-exported module variables directly
+
+With modules, we’re finally safer from the misuse of global variables. Everything that we didn’t explicitly mark for export stays nicely isolated within a module
+
+Because we can export a large number of identifiers, listing them all in an import statement can be tedious. Therefore, a shorthand notation enables us to bring in all exported identifiers from a module, as shown in the following listing:
+
+EXAMPLE OF IMPORTING ALL NAMED EXPORTS FROM THE NINJA.JS MODULE:
+
+    import * as ninjaModule from “Ninja.js”;
+
+    assert(ninjaModule.message === “Hello”,
+        “We can access the imported variable”);
+    //Uses * notation to import all exported identifiers
+
+
+    assert(ninjaModule.sayHiToNinja() === “Hello Yoshi”,
+        “We can say hi to Yoshi from outside the module”);
+    //^^Refers to the named exports through property notation
+
+
+    assert(type of ninjaModule.ninja === “undefined”,
+        “But we cannot access Yoshi directly”);
+    //^^ We still can’t access not-exported identifiers
+
+DEFAULT EXPORTS:
+
+Often we don’t want to export a set of related identifiers from a module, but instead want to represent the whole module through a single export.
+
+One fairly common situation in which this occurs is when our modules contain a single class, as in the following listing:
+
+EXAMPLE OF A DEFAULT EXPORT FROM NINJA.JS
+
+    export default class Ninja {
+        constructor(name){
+            this.name = name;
+        }
+    }
+
+    //^^ Uses the export default keywords to specify the default module binding
+
+    export function compareNinjas(ninja1, ninja2) {
+        return ninja1.name === ninja2.name;
+    }
+
+    //^^ we can still use named exports along with the default export
+
+
+Adding the default keyword after the export keyword specifies the default binding for this module. In this case, the default binding for this module is the class named Ninja. Even though we’ve specified a default binding, we can still use named exports to export additional identifiers, as we did with the compareNinjas function.
+
+EXAMPLE OF IMPORTING A DEFAULT EXPORT:
+
+    import ImportedNinja from “Ninja.js”;
+
+    //^^ When importing a default export, there’s no need for braces, and we can use whatever name we want… ImportedNinja refers to the Ninja class defined in the file Ninja.js
+
+    import { compareNinjas } from “Ninja.js”;
+
+    //^^ We can still import named exports
+
+    const ninja1 = new ImportedNinja(“Yoshi”);
+    const ninja2 = new ImportedNinja(“Hattori”);
+
+    assert(ninja1 !== undefined
+        && ninja2 !== undefined, “We can create a couple of Ninjas”);
+
+    //^^ Creates a couple of ninjas and tests that they exist
+
+    assert(!compareNinjas(ninja1, ninja2),
+        “We can compare ninjas”);
+
+    //^^ We can also access the named exports
+
+We continue the example by importing a named export as in previous examples, just to illustrate that we can have both a default export and a number of named exports within a single module
+    … Finally we instantiate a couple of ninja objects and call the compareNinjas function
+
+HERE’S A SHORTHAND FOR IMPORTING A NAMED EXPORT AND A MODULE:
+
+    import ImportedNinja, {compareNinjas} from “Ninja.js”;
+
+    //^^ use the common operator to import both the default and the named exports
+
+RENAMING EXPORTS AND IMPORTS:
+
+EXAMPLE:
+
+    //Greetings.js
+
+    function sayHi(){
+        return “Hello”;
+    }
+
+    export { sayHi as sayHello }
+
+    //^^ Provides an identifier alias with the as keyword
+
+    // ***** main.js ****/
+
+    import { sayHello } from “Greetings.js”;
+
+When importing, we can only access the alias, not the original function name
+
+
+SIMILAR WHEN RENAMING IMPORTS:
+
+    // ***** Hello.js ***** /
+
+    export function greet(){
+        return “Hello”;
+    }
+
+    // ***** Salute.js ****/
+
+    export function greet(){
+        return “Salute”;
+    }
+
+    // ***** main.js ****/
+
+    import { greet as sayHello } from “Hello.js”;
+    import { greet as salute } from “Salute.js”;
+
+    //^^ uses the as keyword to alias imports thereby avoiding name clashes
+
+    assert {typeof greet === “undefined”,
+        “We cannot access greet”};
+
+    assert ( sayHello() === “Hello” && salute() === “Salute”,
+        “We can access aliased identifiers!”);
+
+    //^^ But we can access the aliases
