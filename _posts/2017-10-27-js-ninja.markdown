@@ -1,0 +1,118 @@
+---
+layout: post
+title:  "Manipulating Styles"
+date:   2017-10-27 12:00:01-0400
+---
+WHERE ARE MY STYLES?
+
+The style information in the style property of a DOM element is initially set from the value specified for the style attribute in the element markup.
+
+Initially, the style info is set in the value specified for the style attribute in the element markup: for example, style=“color:red;” results in that style information being placed into the style object
+
+During page execution, the script can set or modify values in the style object, and these changes will actively affect the display of the element.
+
+SEE PDF PAGE 340 FOR HOW THE STYLE PROPERTY GETS ITS VALUES
+
+Even though we see that the font-size style has been applied to the element, the test fails. This is because the style object doesn’t reflect any style information inherited from CSS style sheets:
+
+assert(div.style.fontSize === “1.8em”,
+    “fontSize was recorded”);
+assert(div.style.borderWidth === “0”,
+    “borderWidth was recorded”)
+
+
+Just defining a style sheet in a style, /style tags isn’t enough to apply them.
+
+You must also apply them with assignment:
+    div.style.borderWidth = “4px”;
+
+The assignment causes a borderWidth property to appear in the style property of the element.. as seen in the test:
+
+assert(div.style.borderWidth === “4px”,
+    ‘borderWidth was replaced’);
+
+Note: any values in an element’s style property take precedence over anything inherited by a style sheet.
+
+STYLE PROPERTY NAMING:
+
+Differences between how CSS names styles and how we access those in script exist, and some style names differ across browsers.
+
+CSS attributes that span more than one word separate the words with a hyphen (like font-weight, font-size)… Property names in JS can contain a hyphen, but including a hyphen prevents the property from being accessed via the dot operator.
+
+This is fine:
+
+    const fontSize = element.style[‘font-size’];
+
+But this isn’t:
+
+    const fontSize = element.style.font-size;
+
+Rather than forcing devs to always use the general form for property access, multiword CSS style names are converted to camel case when used as a property name.
+
+font-size becomes fontSize, and background-color becomes backgroundColor
+
+SEE PDF PG 342 FOR A SIMPLE API FOR ACCESSING STYLES TO AUTOMATICALLY HANDLE THE CAMEL CASING:
+
+FETCHING COMPUTED STYLES
+
+the computed style of an element is a combination of all the built in styles provided by the browser, all the styles applied to it via style sheets, the element’s style attribute and any manipulations of the style property by script
+
+… the standard method, implemented by all modern browsers is the getComputedStyle method.
+
+… accepts an element whose styles are to be computed and returns an interface through which property queries can be made.
+
+… the returned interface provides a method named getPropertyValue for retrieving the computed style of a specific property (accepts CSS property names)
+
+SEE PG 344 FOR EXAMPLE OF FETCHING COMPUTED STYLE VALUES
+
+
+CONVERTING PIXEL VALUES
+
+An important point to consider when setting style values is the assignment of numeric values that represent pixels.
+
+… When setting a numeric value for a style property, we must specify the unit in order for it to work reliably across all browsers
+
+For example, let’s say that we want to set the height style value of an element to 10 pixels. Either of the following is a safe way to do this across browsers:
+
+    element.style.height = “10px”;
+    element.style.height = 10 + “px”;
+
+The following isn’t safe across browsers: 
+
+    element.style.height = 10;
+
+^^ This is tricky… you can’t just add a px to the end because not all numeric values represent pixels! Some style properties take numeric values that don’t represent a pixel dimension… 
+
+z-index
+font-weight
+opacity
+zoom
+line-height
+
+For these, go ahead and extend the function of listing 12.6 to automatically handle non pixel values.
+
+… when attempting to read a pixel value out of a style attribute, the parseFloat method should be used to measure that you get the intended value under all circumstances
+
+MEASURING HEIGHTS AND WIDTHS:
+
+Style properties such as height and width pose a special problem, because their values default to auto when not specified, so that the element sizes itself according to its contents. 
+
+… As a result, we can’t use the height and width style properties to get accurate values unless explicit values are provided in the attribute string
+
+==> Thankfully, the offsetHeight and offsetWidth properties provide just that: a fairly reliable means to access the height and width of an element… but be ware that the value assigned to these two properties include the padding of the element… this info is usually exactly what we want if we’re attempting to position one element over another.
+
+WARNING: in highly interactive sites, elements will likely spend some of their time in a non displayed state (with the display style being set to none), and when an element isn’t part of the display, it has no dimensions.
+
+… Any attempt to fetch the offsetWidth or offsetHeight properties of a non displayed element will result in a value of 0.
+
+… for such hidden laments, if we want to obtain the non hidden dimensions, we can employ a trick to momentarily unhide the element, grab the values, and hide it again:
+
+1.) Change the display property to block
+2.) Set visibility to hidden
+3.) Set position to absolute 
+4.) Grab the dimension values
+5.) Restore the changed properties
+
+Changing the display property to block allows us to grab the values of the offsetHeight and offsetWidth but that makes the element part of the display and therefore visible. To make the element invisible, we’ll set the visibility property to hidden. 
+… That leaves a big hole where the element is positioned, so we also set the position property to absolute to take the element out of the normal display flow.
+… SEE PDF PG 348 FOR THE CODE OF THIS
